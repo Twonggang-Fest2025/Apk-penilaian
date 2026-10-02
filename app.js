@@ -1,103 +1,286 @@
-const RUBRICS={
-X:[
- ["Pengertian seni",["ekspresi","ungkapan","perasaan","gagasan","karya","manusia"]],
- ["Prinsip seni rupa 2 dimensi",["kesatuan","keseimbangan","proporsi","irama","penekanan","harmoni","kontras"]],
- ["7 unsur seni rupa",["titik","garis","bidang","bentuk","gelap","terang","tekstur","warna"]],
- ["4 jenis warna dan contoh",["primer","sekunder","tersier","netral","merah","kuning","biru","hijau","ungu","putih","hitam"]],
- ["Seni rupa murni dan terapan",["murni","terapan","fungsi","keindahan","lukisan","patung","batik","keramik","meja","kursi"]]
-],
-XI:[
- ["Pengertian seni dan ekspresi diri",["seni","ekspresi","perasaan","pemikiran","gagasan","emosi","media"]],
- ["Tenaga, ruang, waktu",["tenaga","ruang","waktu","gerak","tempo","level","arah","pola"]],
- ["Wiraga, wirasa, wirama",["wiraga","wirasa","wirama","gerak","perasaan","ekspresi","irama","tempo"]],
- ["Tari imajinatif dan imitatif",["imajinatif","imajinasi","khayal","imitatif","meniru","binatang","alam"]],
- ["Kerangka komposisi tari",["tema","gerak","ruang","tenaga","waktu","pola lantai","iringan","komposisi","evaluasi"]]
-],
-XII:[
- ["Klasik, tradisional, modern, kontemporer",["klasik","tradisional","modern","kontemporer"]],
- ["Unsur musik pada kasus",["tempo","ritme","melodi","harmoni","dinamika","timbre","pengulangan","pola","vokal","bass","drum"]],
- ["Fungsi melodis, harmonis, ritmis",["melodis","harmonis","ritmis","melodi","harmoni","ritme","irama"]],
- ["Instrumen berdasarkan cara penggunaan",["dipukul","ditiup","dipetik","digesek","ditekan","digetarkan","perkusi","tiup","petik","gesek"]],
- ["Instrumen berdasarkan sumber bunyi",["idiophone","membranophone","chordophone","aerophone","electrophone","senar","membran","udara","elektrik"]]
-]};
+// ===============================
+// AI PENILAI LEMBAR JAWABAN
+// ===============================
 
-const photo=document.getElementById("photo"), canvas=document.getElementById("warped"), answers=document.getElementById("answers");
-let crops=[], data={};
+// TEMPEL URL WEB APP APPS SCRIPT DI SINI
+const WEB_APP_URL = "TEMPEL_URL_APPS_SCRIPT_DI_SINI";
 
-function norm(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ")}
-function scoreText(t,keys,max){
- const n=norm(t), found=[...new Set(keys.filter(k=>n.includes(norm(k))))];
- const ratio=found.length/Math.max(1,Math.ceil(keys.length*.4));
- if(!t.trim()) return {score:0,status:"PERIKSA",found};
- if(ratio<.7) return {score:Math.round(max*Math.min(.55,ratio*.65)),status:"PERIKSA",found};
- return {score:Math.min(max,Math.round(max*(.45+.55*Math.min(1,ratio)))),status:"PERIKSA",found};
-}
-function setMsg(x){document.getElementById("msg").textContent=x}
+const photo = document.getElementById("photo");
+const answers = document.getElementById("answers");
 
-function showCrop(i,blob){
- const box=document.createElement("div");box.className="answer";
- box.innerHTML=`<h3>Soal ${i+1} — ${RUBRICS[document.getElementById("kelas").value][i][0]}</h3><div class="crop"><canvas id="c${i}"></canvas></div><div class="body"><div class="meta" id="m${i}">Membaca tulisan…</div><textarea id="t${i}" placeholder="Hasil bacaan akan muncul di sini. Anda boleh memperbaikinya."></textarea><div class="scoreline"><label>Nilai <input id="s${i}" type="number" min="0" value="0"></label><span id="st${i}" class="check">PERIKSA</span></div></div>`;
- answers.appendChild(box);
- const img=new Image();img.onload=async()=>{
-   const c=document.getElementById(`c${i}`);c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);
-   try{
-    const r=await Tesseract.recognize(blob,"ind");
-    const txt=(r.data.text||"").trim();
-    document.getElementById(`t${i}`).value=txt;
-    const sc=scoreText(txt,RUBRICS[document.getElementById("kelas").value][i][1],+document.getElementById("max").value||20);
-    document.getElementById(`s${i}`).value=sc.score;
-    document.getElementById(`m${i}`).textContent=sc.found.length?`Indikator terbaca: ${sc.found.join(", ")}`:"Tulisan belum terbaca cukup baik.";
-    document.getElementById(`st${i}`).textContent=sc.status;
-    updateTotal();
-   }catch(e){document.getElementById(`m${i}`).textContent="OCR gagal; tulis/perbaiki jawaban secara manual.";document.getElementById(`st${i}`).textContent="PERIKSA"}
-   URL.revokeObjectURL(img.src);
- };
- img.src=URL.createObjectURL(blob);
+function setMsg(text) {
+  const el = document.getElementById("msg");
+  if (el) el.textContent = text;
 }
 
-function cropFromCanvas(){
- const w=canvas.width,h=canvas.height;
- // Berdasarkan template lembar yang Anda kirim: area jawaban dimulai sekitar 26% tinggi,
- // lalu dibagi menjadi lima zona yang saling berurutan. Zona sengaja diberi overlap agar tulisan
- // di garis batas tidak mudah terpotong.
- const top=Math.floor(h*.255), bottom=Math.floor(h*.93), usable=bottom-top, step=usable/5;
- let arr=[];
- for(let i=0;i<5;i++){
-   const y=Math.max(0,Math.floor(top+i*step-step*.05));
-   const y2=Math.min(h,Math.floor(top+(i+1)*step+step*.05));
-   const c=document.createElement("canvas");c.width=w;c.height=y2-y;
-   c.getContext("2d").drawImage(canvas,0,y,w,y2-y,0,0,w,y2-y);
-   arr.push(c.toDataURL("image/jpeg",.9));
- }
- return arr;
-}
-function dataUrlToBlob(u){return fetch(u).then(r=>r.blob())}
+function updateTotal() {
+  let total = 0;
 
-function drawOriginal(file){
- const img=new Image();img.onload=()=>{canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;canvas.getContext("2d").drawImage(img,0,0);processCrops();};img.src=URL.createObjectURL(file);
+  for (let i = 0; i < 5; i++) {
+    total += Number(
+      document.getElementById(`s${i}`)?.value || 0
+    );
+  }
+
+  const el = document.getElementById("total");
+  if (el) el.textContent = `Total: ${total}`;
 }
-function processCrops(){
- answers.innerHTML="";crops=cropFromCanvas();
- crops.forEach((u,i)=>dataUrlToBlob(u).then(b=>showCrop(i,b)));
+
+function showPreview(file) {
+  const old = document.getElementById("preview-ai");
+  if (old) old.remove();
+
+  const img = document.createElement("img");
+  img.id = "preview-ai";
+  img.src = URL.createObjectURL(file);
+  img.style.maxWidth = "100%";
+  img.style.maxHeight = "500px";
+  img.style.display = "block";
+  img.style.margin = "15px auto";
+  img.style.borderRadius = "10px";
+
+  answers.prepend(img);
 }
-document.getElementById("process").onclick=()=>{
- const f=photo.files[0];if(!f){alert("Pilih 1 foto dulu.");return}
- setMsg("Memproses satu lembar…");
- drawOriginal(f);setMsg("Foto dimuat. Area jawaban sedang dipotong.");
- // V3 memakai template tetap sebagai baseline. Deteksi perspektif otomatis penuh akan ditambahkan setelah
- // satu foto terbukti stabil, karena foto dengan bayangan/latarnya bisa membuat deteksi sudut salah.
+
+function renderResults(result) {
+  answers.innerHTML = "";
+
+  const list = result.answers || [];
+
+  list.forEach((item, index) => {
+    const box = document.createElement("div");
+    box.className = "answer";
+
+    const score = Number(item.score || 0);
+    const max = Number(item.max_score || 20);
+    const confidence = Math.round(
+      Number(item.confidence || 0) * 100
+    );
+
+    box.innerHTML = `
+      <h3>${item.question || `Q${index + 1}`}</h3>
+
+      <div class="meta">
+        Confidence AI: ${confidence}%
+      </div>
+
+      <textarea id="t${index}" placeholder="Jawaban terbaca AI">${item.extracted_answer || ""}</textarea>
+
+      <div class="scoreline">
+        <label>
+          Nilai
+          <input
+            id="s${index}"
+            type="number"
+            min="0"
+            max="${max}"
+            value="${score}"
+          >
+        </label>
+
+        <span
+          id="st${index}"
+          class="${item.confidence < 0.75 ? "check" : ""}"
+        >
+          ${item.confidence < 0.75 ? "PERIKSA" : "OK"}
+        </span>
+      </div>
+
+      <div class="meta">
+        ${item.reason || ""}
+      </div>
+    `;
+
+    answers.appendChild(box);
+  });
+
+  updateTotal();
+}
+
+async function sendToGemini(file) {
+  if (!WEB_APP_URL || WEB_APP_URL.includes("TEMPEL_URL")) {
+    throw new Error("URL Web App Apps Script belum dimasukkan.");
+  }
+
+  setMsg("Mengirim foto ke AI Gemini...");
+
+  const base64 = await fileToBase64(file);
+
+  const response = await fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify({
+      image: base64,
+      mimeType: file.type || "image/jpeg"
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Server gagal (${response.status})`
+    );
+  }
+
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(
+      data.error || "AI gagal memproses lembar jawaban."
+    );
+  }
+
+  return data.result;
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const result = reader.result;
+
+      // Buang bagian:
+      // data:image/jpeg;base64,
+      const base64 = String(result).split(",")[1];
+
+      resolve(base64);
+    };
+
+    reader.onerror = () => {
+      reject(new Error("Foto gagal dibaca."));
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+
+// ===============================
+// TOMBOL PROSES
+// ===============================
+
+document.getElementById("process").onclick = async () => {
+
+  const file = photo?.files?.[0];
+
+  if (!file) {
+    alert("Pilih satu foto lembar jawaban terlebih dahulu.");
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    alert("File harus berupa foto JPG, JPEG, PNG, atau gambar.");
+    return;
+  }
+
+  try {
+
+    setMsg("Membaca foto lembar jawaban...");
+    showPreview(file);
+
+    const result = await sendToGemini(file);
+
+    renderResults(result);
+
+    const total = Number(result.total || 0);
+
+    setMsg(
+      `Selesai. Total nilai: ${total}`
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    setMsg("Terjadi kesalahan.");
+
+    answers.innerHTML = `
+      <div class="answer">
+        <h3>Gagal memproses</h3>
+        <div class="meta">
+          ${error.message}
+        </div>
+      </div>
+    `;
+
+    alert(error.message);
+  }
 };
 
-function updateTotal(){
- let total=0;for(let i=0;i<5;i++)total+=+(document.getElementById(`s${i}`)?.value||0);
- document.getElementById("total").textContent=`Total: ${total}`;
-}
-document.addEventListener("input",e=>{if(/^s[0-4]$/.test(e.target.id))updateTotal()});
-document.getElementById("csv").onclick=()=>{
- const cls=document.getElementById("kelas").value,total=[0,1,2,3,4].reduce((a,i)=>a+(+document.getElementById(`s${i}`)?.value||0),0);
- let row=[document.getElementById("name").value,document.getElementById("class2").value,document.getElementById("number").value];
- for(let i=0;i<5;i++)row.push(document.getElementById(`s${i}`)?.value||"");
- row.push(total);
- const csv="Nama,Kelas,Nomor,Q1,Q2,Q3,Q4,Q5,Total\n"+row.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",");
- const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download=`hasil-${cls}.csv`;a.click();
+
+// ===============================
+// UPDATE NILAI MANUAL
+// ===============================
+
+document.addEventListener("input", (event) => {
+
+  if (/^s[0-4]$/.test(event.target.id)) {
+    updateTotal();
+  }
+
+});
+
+
+// ===============================
+// EXPORT CSV
+// ===============================
+
+document.getElementById("csv").onclick = () => {
+
+  const name =
+    document.getElementById("name")?.value || "";
+
+  const className =
+    document.getElementById("class2")?.value || "";
+
+  const number =
+    document.getElementById("number")?.value || "";
+
+  const classCode =
+    document.getElementById("kelas")?.value || "";
+
+  const scores = [];
+
+  for (let i = 0; i < 5; i++) {
+    scores.push(
+      document.getElementById(`s${i}`)?.value || ""
+    );
+  }
+
+  const total = scores.reduce(
+    (sum, value) => sum + Number(value || 0),
+    0
+  );
+
+  const row = [
+    name,
+    className,
+    number,
+    ...scores,
+    total
+  ];
+
+  const csv =
+    "Nama,Kelas,Nomor,Q1,Q2,Q3,Q4,Q5,Total\n" +
+    row
+      .map(value =>
+        `"${String(value).replaceAll('"', '""')}"`
+      )
+      .join(",");
+
+  const blob = new Blob(
+    [csv],
+    { type: "text/csv;charset=utf-8" }
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `hasil-${classCode || "penilaian"}.csv`;
+  a.click();
+
+  URL.revokeObjectURL(url);
 };
