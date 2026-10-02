@@ -2,7 +2,7 @@
 // AI PENILAI LEMBAR JAWABAN
 // ===============================
 
-const WEB_APP_URL = "URL_WEB_APP_APPS_SCRIPT_ANDA";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwsyNf7WJjnyZdKc9kNIuN0Vf8D26tG6ORWYXA3R4_VfjcSUqLS8p7_8Uc_aIL3SsSMJA/exec";
 
 const photo = document.getElementById("photo");
 const camera = document.getElementById("camera");
