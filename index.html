@@ -1,31 +1,58 @@
-PENILAI UJIAN ESAI • V2
-Penilai Ujian Seni Budaya
-Foto lembar jawaban → OCR → penilaian berbasis rubrik → CSV.
-Tanpa API berbayar
-1. Paket soal & bobot
-Kelas X — Seni RupaXI — Seni TariXII — Seni Musik Nilai maksimal per soal
-Setiap paket terdiri dari 5 soal esai. Default 20 poin per soal = nilai akhir 100.
-2. Upload foto
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Penilai Ujian Esai — V2</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+<div class="container">
+<header class="hero">
+  <div><div class="eyebrow">PENILAI UJIAN ESAI • V2</div><h1>Penilai Ujian Seni Budaya</h1>
+  <p>Foto lembar jawaban → OCR → penilaian berbasis rubrik → CSV.</p></div>
+  <div class="pill">Tanpa API berbayar</div>
+</header>
 
-Mulai membaca & menilai
-3. Proses
-Menunggu foto…
+<section class="card">
+<h2>1. Paket soal & bobot</h2>
+<div class="grid">
+<label>Kelas
+<select id="kelas"><option value="X">X — Seni Rupa</option><option value="XI">XI — Seni Tari</option><option value="XII">XII — Seni Musik</option></select></label>
+<label>Nilai maksimal per soal
+<input id="maxScore" type="number" min="1" value="20"></label>
+</div>
+<p class="hint">Setiap paket terdiri dari 5 soal esai. Default 20 poin per soal = nilai akhir 100.</p>
+</section>
 
+<section class="card">
+<h2>2. Upload foto</h2>
+<input id="files" type="file" accept="image/*" multiple>
+<div id="selected"></div>
+<button id="run" class="primary">Mulai membaca & menilai</button>
+</section>
 
-4. Hasil
-Download CSVHapus
-No
-Siswa
-Kelas
-Nomor
-Q1
-Q2
-Q3
-Q4
-Q5
-Total
-Status
+<section class="card">
+<div class="row"><h2>3. Proses</h2><span id="status">Menunggu foto…</span></div>
+<div class="progress"><div id="bar"></div></div>
+<pre id="log"></pre>
+</section>
 
-5. Rubrik yang dipakai
+<section class="card">
+<div class="row"><h2>4. Hasil</h2><div><button id="csv" class="secondary">Download CSV</button><button id="clear" class="secondary">Hapus</button></div></div>
+<div class="tablewrap"><table><thead><tr><th>No</th><th>Siswa</th><th>Kelas</th><th>Nomor</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>Status</th></tr></thead><tbody id="tbody"></tbody></table></div>
+</section>
 
-Penting: V2 ini memperbaiki logika penilaian dan memberi status “PERIKSA” ketika OCR/jawaban tidak cukup yakin. Ini bukan jaminan bahwa tulisan tangan terbaca sempurna. Nilai final sebaiknya dikunci setelah guru memeriksa baris yang ditandai.
+<section class="card">
+<h2>5. Rubrik yang dipakai</h2>
+<div id="rubric"></div>
+</section>
+
+<section class="card warning">
+<b>Penting:</b> V2 ini memperbaiki logika penilaian dan memberi status “PERIKSA” ketika OCR/jawaban tidak cukup yakin. Ini bukan jaminan bahwa tulisan tangan terbaca sempurna. Nilai final sebaiknya dikunci setelah guru memeriksa baris yang ditandai.
+</section>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
