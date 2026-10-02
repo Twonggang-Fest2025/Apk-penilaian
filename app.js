@@ -3,7 +3,8 @@
 // ===============================
 
 // TEMPEL URL WEB APP APPS SCRIPT DI SINI
-const WEB_APP_URL = "TEMPEL_URL_APPS_SCRIPT_DI_SINI";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwr9EotON2EzmzR4cmpiPjWtvIk5uWCM8nGeW8dfaa55dKrcCyTJ3FJWXKRPWwBvduoGg/exec
+
 
 const photo = document.getElementById("photo");
 const answers = document.getElementById("answers");
