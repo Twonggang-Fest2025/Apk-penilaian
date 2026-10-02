@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penilai Ujian Seni Budaya</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Penilai Ujian Seni Budaya</h1>
+      <p>Penilaian lembar jawaban berbasis foto — tanpa API berbayar</p>
+    </div>
+    <div class="badge">MODE GRATIS</div>
+  </header>
+
+  <section class="card">
+    <h2>1. Pilih kelas</h2>
+    <div class="grid">
+      <label>Kelas
+        <select id="kelas">
+          <option value="X">X — Seni Rupa</option>
+          <option value="XI">XI — Seni Tari</option>
+          <option value="XII">XII — Seni Musik</option>
+        </select>
+      </label>
+      <label>Bobot tiap soal
+        <select id="bobot">
+          <option value="20">20 poin × 5 soal = 100</option>
+          <option value="10">10 poin × 5 soal = 50</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. Upload lembar jawaban</h2>
+    <p class="muted">Bisa memilih banyak foto sekaligus. Untuk uji awal, gunakan 5–10 lembar dahulu.</p>
+    <input id="files" type="file" accept="image/*" multiple>
+    <div id="fileList" class="file-list"></div>
+    <button id="start" class="primary">Mulai membaca & menilai</button>
+  </section>
+
+  <section class="card">
+    <div class="progress-head">
+      <h2>3. Proses</h2>
+      <span id="status">Menunggu foto...</span>
+    </div>
+    <div class="progress"><div id="bar"></div></div>
+    <div id="log" class="log"></div>
+  </section>
+
+  <section class="card">
+    <div class="results-head">
+      <h2>4. Hasil penilaian</h2>
+      <div>
+        <button id="csv" class="secondary">Download CSV</button>
+        <button id="clear" class="secondary">Hapus hasil</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>No</th><th>File</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody id="results"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card note">
+    <h2>Penting</h2>
+    <p>Versi ini tidak mengirim foto ke OpenAI/Gemini. OCR berjalan di browser. Karena tulisan tangan sulit dibaca otomatis, hasil yang berstatus <b>PERIKSA</b> sebaiknya diperiksa guru sebelum nilai dikunci.</p>
+  </section>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
