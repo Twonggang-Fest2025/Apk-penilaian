@@ -1,22 +1,195 @@
-PENILAI UJIAN ESai • V3
-Penilai Lembar Jawaban
-Fokus V3: satu foto siswa → luruskan kertas → potong jawaban → periksa → nilai.
-Mode aman
-1. Pilih paket
-Kelas X — Seni RupaXI — Seni TariXII — Seni Musik Nilai maksimal/soal
-2. Tes 1 lembar dulu
-Pilih foto lembar jawaban seperti foto Anggita. V3 tidak akan mengubah tulisan yang tidak terbaca menjadi nilai 0.
-Proses 1 lembar
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-3. Foto yang sudah diluruskan
+  <title>Penilai Lembar Jawaban AI</title>
 
-Jika sudut kertas terdeteksi, V3 mencoba meluruskan perspektif. Jika gagal, foto asli tetap digunakan.
-4. Area jawaban
+  <link rel="stylesheet" href="style.css">
+</head>
 
-5. Identitas
-Nama Kelas Nomor ujian
-6. Nilai
+<body>
 
-Total: —
-Download hasil 1 siswa
-Penting untuk V3: pembacaan tulisan tangan adalah bagian tersulit. Tesseract lokal dicoba sebagai bantuan, tetapi teks hasil OCR harus dapat diedit. Jika OCR tidak yakin, status menjadi PERIKSA. Tahap berikutnya dapat menambahkan AI selektif hanya pada jawaban yang perlu diperiksa, bukan mengirim 500 foto sekaligus.
+  <main class="wrap">
+
+    <section class="card">
+
+      <h1>🤖 Penilai Lembar Jawaban AI</h1>
+
+      <p>
+        Sistem penilaian otomatis lembar jawaban Seni Budaya
+        menggunakan AI Gemini.
+      </p>
+
+    </section>
+
+
+    <!-- PILIH PAKET -->
+    <section class="card">
+
+      <h2>1. Pilih Paket</h2>
+
+      <div class="grid">
+
+        <label>
+          Paket Soal
+          <select id="kelas">
+            <option value="X-Seni-Rupa">
+              Kelas X — Seni Rupa
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Nilai Maksimal / Soal
+          <input
+            type="number"
+            value="20"
+            readonly
+          >
+        </label>
+
+      </div>
+
+    </section>
+
+
+    <!-- IDENTITAS -->
+    <section class="card">
+
+      <h2>2. Identitas Siswa</h2>
+
+      <div class="grid">
+
+        <label>
+          Nama Siswa
+          <input
+            type="text"
+            id="name"
+            placeholder="Nama siswa"
+          >
+        </label>
+
+        <label>
+          Kelas
+          <input
+            type="text"
+            id="class2"
+            placeholder="Contoh: X.1"
+          >
+        </label>
+
+        <label>
+          Nomor Ujian
+          <input
+            type="text"
+            id="number"
+            placeholder="Nomor ujian"
+          >
+        </label>
+
+      </div>
+
+    </section>
+
+
+    <!-- FOTO -->
+    <section class="card">
+
+      <h2>3. Foto Lembar Jawaban</h2>
+
+      <p class="meta">
+        Foto harus terlihat jelas dan seluruh bagian jawaban
+        sebaiknya masuk dalam satu foto.
+      </p>
+
+      <input
+        type="file"
+        id="photo"
+        accept="image/*"
+        capture="environment"
+      >
+
+      <button
+        id="process"
+        type="button"
+      >
+        🤖 PERIKSA DENGAN AI
+      </button>
+
+      <div id="msg" class="meta">
+        Belum ada foto yang diproses.
+      </div>
+
+    </section>
+
+
+    <!-- HASIL -->
+    <section class="card">
+
+      <h2>4. Hasil Penilaian</h2>
+
+      <div id="answers" class="answers">
+
+        <div class="answer">
+
+          <h3>Belum ada hasil</h3>
+
+          <div class="meta">
+            Pilih foto lembar jawaban kemudian tekan
+            "PERIKSA DENGAN AI".
+          </div>
+
+        </div>
+
+      </div>
+
+      <div
+        id="total"
+        class="total"
+      >
+        Total: 0
+      </div>
+
+    </section>
+
+
+    <!-- DOWNLOAD -->
+    <section class="card">
+
+      <h2>5. Simpan Hasil</h2>
+
+      <button
+        id="csv"
+        type="button"
+      >
+        Download Hasil CSV
+      </button>
+
+    </section>
+
+
+    <section class="card">
+
+      <div class="meta">
+
+        <strong>Catatan:</strong><br>
+
+        AI membaca tulisan tangan langsung dari foto,
+        kemudian membandingkannya dengan rubrik soal.
+        Jika AI kurang yakin membaca suatu jawaban,
+        hasil akan diberi tanda <strong>PERIKSA</strong>.
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- JAVASCRIPT -->
+  <script src="app.js"></script>
+
+</body>
+</html>
