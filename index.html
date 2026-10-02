@@ -97,58 +97,52 @@
   <section class="card">
 
     <h2>3. Foto Lembar Jawaban</h2>
+<section class="card">
 
-    <p class="meta">
-      Pilih salah satu cara untuk memasukkan foto.
-    </p>
+  <h2>3. Foto Lembar Jawaban</h2>
 
+  <p class="meta">
+    Pilih salah satu cara untuk memasukkan lembar jawaban.
+  </p>
 
-    <div class="grid">
+  <div class="grid">
 
-      <label>
-        📷 Ambil Foto dengan Kamera
+    <label>
+      📷 Ambil Foto dengan Kamera
 
-        <input
-          type="file"
-          id="camera"
-          accept="image/*"
-          capture="environment"
-        >
-      </label>
+      <input
+        type="file"
+        id="camera"
+        accept="image/*"
+        capture="environment"
+      >
+    </label>
 
+    <label>
+      🖼️ Pilih Foto dari Galeri / File
 
-      <label>
-        📁 Pilih dari File / Galeri
+      <input
+        type="file"
+        id="photo"
+        accept="image/*"
+      >
+    </label>
 
-        <input
-          type="file"
-          id="photo"
-          accept="image/*"
-        >
-      </label>
+  </div>
 
-    </div>
+  <button
+    id="process"
+    type="button"
+  >
+    🤖 PERIKSA DENGAN AI
+  </button>
 
+  <div id="msg" class="meta">
+    Belum ada foto yang diproses.
+  </div>
 
-    <button
-      id="process"
-      type="button"
-    >
-      🤖 PERIKSA DENGAN AI
-    </button>
-
-
-    <div
-      id="msg"
-      class="meta"
-    >
-      Belum ada foto yang diproses.
-    </div>
-
-  </section>
-
-
-  <section class="card">
+</section>
+>
 
     <h2>4. Hasil Penilaian</h2>
 
