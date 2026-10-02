@@ -1,93 +1,103 @@
 const RUBRICS={
 X:[
- {q:"Pengertian seni",keys:["ekspresi","ungkapan","perasaan","gagasan","audio","visual","sastra","karya manusia"],must:2},
- {q:"Prinsip seni rupa 2 dimensi",keys:["kesatuan","keseimbangan","proporsi","irama","penekanan","harmoni","kontras"],must:3},
- {q:"7 unsur seni rupa",keys:["titik","garis","bidang","bentuk","gelap terang","gelap","terang","tekstur","warna"],must:5},
- {q:"4 jenis warna dan contoh",keys:["primer","sekunder","tersier","netral","merah","kuning","biru","hijau","ungu","putih","hitam"],must:4},
- {q:"Seni rupa murni dan terapan",keys:["murni","terapan","fungsi","keindahan","estetika","lukisan","patung","meja","kursi","keramik","batik"],must:4}
+ ["Pengertian seni",["ekspresi","ungkapan","perasaan","gagasan","karya","manusia"]],
+ ["Prinsip seni rupa 2 dimensi",["kesatuan","keseimbangan","proporsi","irama","penekanan","harmoni","kontras"]],
+ ["7 unsur seni rupa",["titik","garis","bidang","bentuk","gelap","terang","tekstur","warna"]],
+ ["4 jenis warna dan contoh",["primer","sekunder","tersier","netral","merah","kuning","biru","hijau","ungu","putih","hitam"]],
+ ["Seni rupa murni dan terapan",["murni","terapan","fungsi","keindahan","lukisan","patung","batik","keramik","meja","kursi"]]
 ],
 XI:[
- {q:"Pengertian seni dan ekspresi diri",keys:["seni","ekspresi","perasaan","pemikiran","gagasan","emosi","media"],must:2},
- {q:"Tenaga, ruang, waktu",keys:["tenaga","ruang","waktu","gerak","tempo","level","arah","pola"],must:3},
- {q:"Wiraga, wirasa, wirama",keys:["wiraga","wirasa","wirama","gerak","perasaan","ekspresi","irama","tempo"],must:3},
- {q:"Tari imajinatif dan imitatif",keys:["imajinatif","imajinasi","khayal","tidak nyata","imitatif","meniru","binatang","alam"],must:2},
- {q:"Kerangka komposisi tari",keys:["tema","gerak","ruang","tenaga","waktu","pola lantai","iringan","komposisi","evaluasi"],must:3}
+ ["Pengertian seni dan ekspresi diri",["seni","ekspresi","perasaan","pemikiran","gagasan","emosi","media"]],
+ ["Tenaga, ruang, waktu",["tenaga","ruang","waktu","gerak","tempo","level","arah","pola"]],
+ ["Wiraga, wirasa, wirama",["wiraga","wirasa","wirama","gerak","perasaan","ekspresi","irama","tempo"]],
+ ["Tari imajinatif dan imitatif",["imajinatif","imajinasi","khayal","imitatif","meniru","binatang","alam"]],
+ ["Kerangka komposisi tari",["tema","gerak","ruang","tenaga","waktu","pola lantai","iringan","komposisi","evaluasi"]]
 ],
 XII:[
- {q:"Klasik, tradisional, modern, kontemporer",keys:["klasik","tradisional","modern","kontemporer"],must:3},
- {q:"Seluruh unsur musik pada kasus",keys:["tempo","ritme","melodi","harmoni","dinamika","timbre","pengulangan","pola","vokal","bass","drum"],must:5},
- {q:"Fungsi melodis, harmonis, ritmis",keys:["melodis","harmonis","ritmis","melodi","harmoni","ritme","irama"],must:3},
- {q:"Instrumen berdasarkan cara penggunaan",keys:["dipukul","ditiup","dipetik","digesek","ditekan","digetarkan","perkusi","tiup","petik","gesek"],must:3},
- {q:"Instrumen berdasarkan sumber bunyi",keys:["idiophone","membranophone","chordophone","aerophone","electrophone","senar","membran","udara","elektrik"],must:3}
+ ["Klasik, tradisional, modern, kontemporer",["klasik","tradisional","modern","kontemporer"]],
+ ["Unsur musik pada kasus",["tempo","ritme","melodi","harmoni","dinamika","timbre","pengulangan","pola","vokal","bass","drum"]],
+ ["Fungsi melodis, harmonis, ritmis",["melodis","harmonis","ritmis","melodi","harmoni","ritme","irama"]],
+ ["Instrumen berdasarkan cara penggunaan",["dipukul","ditiup","dipetik","digesek","ditekan","digetarkan","perkusi","tiup","petik","gesek"]],
+ ["Instrumen berdasarkan sumber bunyi",["idiophone","membranophone","chordophone","aerophone","electrophone","senar","membran","udara","elektrik"]]
 ]};
 
-const filesEl=document.getElementById("files"), selected=document.getElementById("selected");
-filesEl.onchange=()=>{selected.innerHTML="";[...filesEl.files].forEach((f,i)=>{let d=document.createElement("div");d.className="file";d.textContent=`${i+1}. ${f.name}`;selected.appendChild(d)})};
+const photo=document.getElementById("photo"), canvas=document.getElementById("warped"), answers=document.getElementById("answers");
+let crops=[], data={};
 
-const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ");
-function wordsFound(text,keys){let t=norm(text);return [...new Set(keys.filter(k=>t.includes(norm(k))))]}
-function extractIdentity(text){
- const n=text.match(/(?:nama)\s*[:.]?\s*([^\n]+)/i);
- const k=text.match(/(?:kelas)\s*[:.]?\s*([^\n]+)/i);
- const no=text.match(/(?:nomor ujian|no\.?\s*ujian)\s*[:.]?\s*([^\n]+)/i);
- return {name:n?n[1].trim():"Tidak terbaca",kelas:k?k[1].trim():"Tidak terbaca",nomor:no?no[1].trim():"Tidak terbaca"};
+function norm(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s]/g," ")}
+function scoreText(t,keys,max){
+ const n=norm(t), found=[...new Set(keys.filter(k=>n.includes(norm(k))))];
+ const ratio=found.length/Math.max(1,Math.ceil(keys.length*.4));
+ if(!t.trim()) return {score:0,status:"PERIKSA",found};
+ if(ratio<.7) return {score:Math.round(max*Math.min(.55,ratio*.65)),status:"PERIKSA",found};
+ return {score:Math.min(max,Math.round(max*(.45+.55*Math.min(1,ratio)))),status:"PERIKSA",found};
 }
-function splitAnswers(text){
- let p=text.replace(/\r/g,"").split(/(?:^|\n)\s*(?:soal\s*)?([1-5])\s*[\.\):\-]/i);
- if(p.length>=11){let a=["","","","",""];for(let i=1;i<p.length;i+=2){let n=+p[i]-1;if(n>=0&&n<5)a[n]=p[i+1]||""}return a}
- // Try lines beginning with "1.", "2.", etc.
- const lines=text.split("\n"), a=["","","","",""];let current=-1;
- for(const line of lines){let m=line.match(/^\s*([1-5])\s*[\.\):\-]/);if(m)current=+m[1]-1;else if(current>=0)a[current]+=" "+line}
- return a;
-}
-function scoreAnswer(answer,rubric,max){
- const found=wordsFound(answer,rubric.keys);
- if(!answer.trim()||found.length<rubric.must)return {score:Math.round(max*Math.min(.5,found.length/Math.max(1,rubric.must)*.5)),status:"PERIKSA",found};
- let coverage=Math.min(1,found.length/Math.max(rubric.must,Math.ceil(rubric.keys.length*.45)));
- let score=Math.round(max*(0.45+0.55*coverage));
- return {score:Math.min(max,score),status:found.length>=rubric.must+2?"OK":"PERIKSA",found};
-}
-function addLog(s){let l=document.getElementById("log");l.textContent+=s+"\n";l.scrollTop=l.scrollHeight}
-function renderRubric(){
- let el=document.getElementById("rubric"), cls=document.getElementById("kelas").value;el.innerHTML="";
- RUBRICS[cls].forEach((r,i)=>{el.innerHTML+=`<details class="rubricbox"><summary>Soal ${i+1} — ${r.q}</summary><div class="body">Indikator: ${r.keys.join(", ")}.</div></details>`})
-}
-document.getElementById("kelas").onchange=renderRubric;renderRubric();
+function setMsg(x){document.getElementById("msg").textContent=x}
 
-let results=[];
-function render(){
- let tb=document.getElementById("tbody");tb.innerHTML="";
- results.forEach((r,i)=>{let tr=document.createElement("tr");tr.innerHTML=`<td>${i+1}</td><td>${r.name}</td><td>${r.kelas}</td><td>${r.nomor}</td>${r.scores.map(x=>`<td>${x}</td>`).join("")}<td><b>${r.total}</b></td><td class="${r.status==="OK"?"ok":"check"}">${r.status}</td>`;tb.appendChild(tr)})
-}
-async function ocr(file){
- const {data}=await Tesseract.recognize(file,"ind",{logger:m=>{
-   if(m.status==="recognizing text")document.getElementById("status").textContent=`Membaca ${Math.round((m.progress||0)*100)}%`;
- }});
- return data.text||"";
-}
-document.getElementById("run").onclick=async()=>{
- const files=[...filesEl.files];if(!files.length){alert("Pilih foto terlebih dahulu.");return}
- const cls=document.getElementById("kelas").value,max=Number(document.getElementById("maxScore").value)||20;
- results=[];document.getElementById("log").textContent="";
- for(let i=0;i<files.length;i++){
-   document.getElementById("status").textContent=`Memproses ${i+1}/${files.length}: ${files[i].name}`;
-   addLog(`\n[${i+1}/${files.length}] ${files[i].name}`);
+function showCrop(i,blob){
+ const box=document.createElement("div");box.className="answer";
+ box.innerHTML=`<h3>Soal ${i+1} — ${RUBRICS[document.getElementById("kelas").value][i][0]}</h3><div class="crop"><canvas id="c${i}"></canvas></div><div class="body"><div class="meta" id="m${i}">Membaca tulisan…</div><textarea id="t${i}" placeholder="Hasil bacaan akan muncul di sini. Anda boleh memperbaikinya."></textarea><div class="scoreline"><label>Nilai <input id="s${i}" type="number" min="0" value="0"></label><span id="st${i}" class="check">PERIKSA</span></div></div>`;
+ answers.appendChild(box);
+ const img=new Image();img.onload=async()=>{
+   const c=document.getElementById(`c${i}`);c.width=img.width;c.height=img.height;c.getContext("2d").drawImage(img,0,0);
    try{
-     const text=await ocr(files[i]), id=extractIdentity(text), ans=splitAnswers(text);
-     const details=ans.map((a,j)=>scoreAnswer(a,RUBRICS[cls][j],max));
-     const scores=details.map(d=>d.score), total=scores.reduce((a,b)=>a+b,0);
-     const status=details.filter(d=>d.status==="PERIKSA").length>=2||id.name==="Tidak terbaca"?"PERIKSA":"OK";
-     results.push({name:id.name,kelas:id.kelas==="Tidak terbaca"?cls:id.kelas,nomor:id.nomor,scores,total,status});
-     addLog(`Siswa: ${id.name} | Skor: ${scores.join(" / ")} | Total: ${total} | ${status}`);
-   }catch(e){results.push({name:"Tidak terbaca",kelas:cls,nomor:"",scores:[0,0,0,0,0],total:0,status:"PERIKSA"});addLog("OCR gagal: "+e.message)}
-   document.getElementById("bar").style.width=`${Math.round((i+1)/files.length*100)}%`;render();
+    const r=await Tesseract.recognize(blob,"ind");
+    const txt=(r.data.text||"").trim();
+    document.getElementById(`t${i}`).value=txt;
+    const sc=scoreText(txt,RUBRICS[document.getElementById("kelas").value][i][1],+document.getElementById("max").value||20);
+    document.getElementById(`s${i}`).value=sc.score;
+    document.getElementById(`m${i}`).textContent=sc.found.length?`Indikator terbaca: ${sc.found.join(", ")}`:"Tulisan belum terbaca cukup baik.";
+    document.getElementById(`st${i}`).textContent=sc.status;
+    updateTotal();
+   }catch(e){document.getElementById(`m${i}`).textContent="OCR gagal; tulis/perbaiki jawaban secara manual.";document.getElementById(`st${i}`).textContent="PERIKSA"}
+   URL.revokeObjectURL(img.src);
+ };
+ img.src=URL.createObjectURL(blob);
+}
+
+function cropFromCanvas(){
+ const w=canvas.width,h=canvas.height;
+ // Berdasarkan template lembar yang Anda kirim: area jawaban dimulai sekitar 26% tinggi,
+ // lalu dibagi menjadi lima zona yang saling berurutan. Zona sengaja diberi overlap agar tulisan
+ // di garis batas tidak mudah terpotong.
+ const top=Math.floor(h*.255), bottom=Math.floor(h*.93), usable=bottom-top, step=usable/5;
+ let arr=[];
+ for(let i=0;i<5;i++){
+   const y=Math.max(0,Math.floor(top+i*step-step*.05));
+   const y2=Math.min(h,Math.floor(top+(i+1)*step+step*.05));
+   const c=document.createElement("canvas");c.width=w;c.height=y2-y;
+   c.getContext("2d").drawImage(canvas,0,y,w,y2-y,0,0,w,y2-y);
+   arr.push(c.toDataURL("image/jpeg",.9));
  }
- document.getElementById("status").textContent=`Selesai: ${files.length} foto`;
+ return arr;
+}
+function dataUrlToBlob(u){return fetch(u).then(r=>r.blob())}
+
+function drawOriginal(file){
+ const img=new Image();img.onload=()=>{canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;canvas.getContext("2d").drawImage(img,0,0);processCrops();};img.src=URL.createObjectURL(file);
+}
+function processCrops(){
+ answers.innerHTML="";crops=cropFromCanvas();
+ crops.forEach((u,i)=>dataUrlToBlob(u).then(b=>showCrop(i,b)));
+}
+document.getElementById("process").onclick=()=>{
+ const f=photo.files[0];if(!f){alert("Pilih 1 foto dulu.");return}
+ setMsg("Memproses satu lembar…");
+ drawOriginal(f);setMsg("Foto dimuat. Area jawaban sedang dipotong.");
+ // V3 memakai template tetap sebagai baseline. Deteksi perspektif otomatis penuh akan ditambahkan setelah
+ // satu foto terbukti stabil, karena foto dengan bayangan/latarnya bisa membuat deteksi sudut salah.
 };
-document.getElementById("clear").onclick=()=>{results=[];render();document.getElementById("log").textContent="";document.getElementById("bar").style.width="0%";document.getElementById("status").textContent="Menunggu foto…"};
+
+function updateTotal(){
+ let total=0;for(let i=0;i<5;i++)total+=+(document.getElementById(`s${i}`)?.value||0);
+ document.getElementById("total").textContent=`Total: ${total}`;
+}
+document.addEventListener("input",e=>{if(/^s[0-4]$/.test(e.target.id))updateTotal()});
 document.getElementById("csv").onclick=()=>{
- if(!results.length){alert("Belum ada hasil.");return}
- let s="No,Siswa,Kelas,Nomor,Q1,Q2,Q3,Q4,Q5,Total,Status\n";
- results.forEach((r,i)=>s+=`${i+1},"${r.name.replace(/"/g,'""')}","${r.kelas}",${r.nomor},${r.scores.join(",")},${r.total},${r.status}\n`);
- const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([s],{type:"text/csv;charset=utf-8"}));a.download="hasil_penilaian_v2.csv";a.click();
+ const cls=document.getElementById("kelas").value,total=[0,1,2,3,4].reduce((a,i)=>a+(+document.getElementById(`s${i}`)?.value||0),0);
+ let row=[document.getElementById("name").value,document.getElementById("class2").value,document.getElementById("number").value];
+ for(let i=0;i<5;i++)row.push(document.getElementById(`s${i}`)?.value||"");
+ row.push(total);
+ const csv="Nama,Kelas,Nomor,Q1,Q2,Q3,Q4,Q5,Total\n"+row.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download=`hasil-${cls}.csv`;a.click();
 };

@@ -3,54 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Penilai Ujian Esai — V2</title>
+<title>Penilai Ujian V3</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/opencv.js@1.2.1/opencv.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
-<div class="container">
-<header class="hero">
-  <div><div class="eyebrow">PENILAI UJIAN ESAI • V2</div><h1>Penilai Ujian Seni Budaya</h1>
-  <p>Foto lembar jawaban → OCR → penilaian berbasis rubrik → CSV.</p></div>
-  <div class="pill">Tanpa API berbayar</div>
+<div class="wrap">
+<header>
+  <div>
+    <small>PENILAI UJIAN ESai • V3</small>
+    <h1>Penilai Lembar Jawaban</h1>
+    <p>Fokus V3: satu foto siswa → luruskan kertas → potong jawaban → periksa → nilai.</p>
+  </div>
+  <span class="badge">Mode aman</span>
 </header>
 
 <section class="card">
-<h2>1. Paket soal & bobot</h2>
+<h2>1. Pilih paket</h2>
 <div class="grid">
 <label>Kelas
 <select id="kelas"><option value="X">X — Seni Rupa</option><option value="XI">XI — Seni Tari</option><option value="XII">XII — Seni Musik</option></select></label>
-<label>Nilai maksimal per soal
-<input id="maxScore" type="number" min="1" value="20"></label>
+<label>Nilai maksimal/soal
+<input id="max" type="number" value="20" min="1" max="100"></label>
 </div>
-<p class="hint">Setiap paket terdiri dari 5 soal esai. Default 20 poin per soal = nilai akhir 100.</p>
 </section>
 
 <section class="card">
-<h2>2. Upload foto</h2>
-<input id="files" type="file" accept="image/*" multiple>
-<div id="selected"></div>
-<button id="run" class="primary">Mulai membaca & menilai</button>
+<h2>2. Tes 1 lembar dulu</h2>
+<input id="photo" type="file" accept="image/*">
+<p class="hint">Pilih foto lembar jawaban seperti foto Anggita. V3 tidak akan mengubah tulisan yang tidak terbaca menjadi nilai 0.</p>
+<button id="process" class="primary">Proses 1 lembar</button>
+<div id="msg"></div>
 </section>
 
 <section class="card">
-<div class="row"><h2>3. Proses</h2><span id="status">Menunggu foto…</span></div>
-<div class="progress"><div id="bar"></div></div>
-<pre id="log"></pre>
+<h2>3. Foto yang sudah diluruskan</h2>
+<div class="canvasbox"><canvas id="warped"></canvas></div>
+<p class="hint">Jika sudut kertas terdeteksi, V3 mencoba meluruskan perspektif. Jika gagal, foto asli tetap digunakan.</p>
 </section>
 
 <section class="card">
-<div class="row"><h2>4. Hasil</h2><div><button id="csv" class="secondary">Download CSV</button><button id="clear" class="secondary">Hapus</button></div></div>
-<div class="tablewrap"><table><thead><tr><th>No</th><th>Siswa</th><th>Kelas</th><th>Nomor</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>Status</th></tr></thead><tbody id="tbody"></tbody></table></div>
+<h2>4. Area jawaban</h2>
+<div id="answers" class="answers"></div>
 </section>
 
 <section class="card">
-<h2>5. Rubrik yang dipakai</h2>
-<div id="rubric"></div>
+<h2>5. Identitas</h2>
+<div class="grid">
+<label>Nama<input id="name" placeholder="Periksa/tulis nama siswa"></label>
+<label>Kelas<input id="class2" placeholder="Periksa/tulis kelas"></label>
+<label>Nomor ujian<input id="number" placeholder="Periksa/tulis nomor"></label>
+</div>
+</section>
+
+<section class="card">
+<h2>6. Nilai</h2>
+<div id="scores"></div>
+<div class="total" id="total">Total: —</div>
+<button id="csv" class="secondary">Download hasil 1 siswa</button>
 </section>
 
 <section class="card warning">
-<b>Penting:</b> V2 ini memperbaiki logika penilaian dan memberi status “PERIKSA” ketika OCR/jawaban tidak cukup yakin. Ini bukan jaminan bahwa tulisan tangan terbaca sempurna. Nilai final sebaiknya dikunci setelah guru memeriksa baris yang ditandai.
+<b>Penting untuk V3:</b> pembacaan tulisan tangan adalah bagian tersulit. Tesseract lokal dicoba sebagai bantuan, tetapi teks hasil OCR <b>harus dapat diedit</b>. Jika OCR tidak yakin, status menjadi PERIKSA. Tahap berikutnya dapat menambahkan AI selektif hanya pada jawaban yang perlu diperiksa, bukan mengirim 500 foto sekaligus.
 </section>
 </div>
 <script src="app.js"></script>
