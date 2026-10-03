@@ -1,79 +1,92 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10234f">
-<title>NilaiLembar — Penilaian Tulisan Tangan</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#11131a">
+  <title>Penilaian Lembar Jawaban</title>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<header class="top">
-  <div class="brand">
-    <div class="logo">✓</div>
-    <div><b>NilaiLembar</b><span>Penilaian tulisan tangan • lokal • tanpa API</span></div>
-  </div>
-  <span class="badge">GRATIS</span>
-</header>
+  <main class="wrap">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">SISTEM PENILAIAN</div>
+        <h1>Penilaian Lembar Jawaban</h1>
+        <p>OCR tulisan tangan berjalan langsung di perangkat. Tidak memerlukan API key.</p>
+      </div>
+      <div id="systemStatus" class="status-pill">Siap</div>
+    </header>
 
-<main class="wrap">
-<section class="card intro">
-  <h1>Penilai Lembar Jawaban Seni Budaya</h1>
-  <p>Upload sampai 10 lembar. Pembaca tulisan tangan memakai model TrOCR yang berjalan di perangkat, lalu jawaban dinilai dengan rubrik yang Bapak tentukan.</p>
-  <div id="modelStatus" class="notice">Pembaca tulisan tangan belum dimuat.</div>
-</section>
+    <section class="card">
+      <h2>1. Pengaturan</h2>
+      <div class="settings">
+        <div>
+          <span>5 soal ×</span>
+          <strong>20</strong>
+          <span>= 100</span>
+        </div>
+        <label>Kelas
+          <select id="kelas">
+            <option>X – Seni Rupa</option>
+            <option>XI – Seni Tari</option>
+            <option>XII – Seni Budaya</option>
+          </select>
+        </label>
+        <label>Nilai maksimal / soal
+          <input id="maxPerQuestion" type="number" min="1" value="20">
+        </label>
+      </div>
+    </section>
 
-<section class="card">
-  <div class="sectionHead"><h2>1. Pengaturan</h2><span class="muted">5 soal × 20 = 100</span></div>
-  <div class="settings">
-    <label>Kelas
-      <select id="kelas">
-        <option value="X">X — Seni Rupa</option>
-        <option value="XI">XI — Seni Tari</option>
-        <option value="XII">XII — Seni Musik</option>
-      </select>
-    </label>
-    <label>Nilai maksimal / soal
-      <input id="maxScore" type="number" min="20" max="20" value="20" readonly>
-    </label>
-  </div>
-</section>
+    <section class="card">
+      <h2>2. Unggah lembar jawaban</h2>
+      <p class="muted">Maks. 10 lembar • JPG, JPEG, PNG, WEBP • bisa pilih 10 sekaligus</p>
 
-<section class="card">
-  <div class="sectionHead"><h2>2. Unggah lembar jawaban</h2><span class="badge soft">maks. 10 lembar</span></div>
-  <label class="drop" for="files">
-    <span class="plus">＋</span>
-    <strong>Pilih foto lembar jawaban</strong>
-    <span>JPG, JPEG, PNG, WEBP • bisa pilih 10 sekaligus</span>
-    <input id="files" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-  </label>
-  <div id="fileList" class="fileList"></div>
-  <div class="actions">
-    <button id="start" class="primary">Mulai Penilaian</button>
-    <button id="clear" class="secondary">Hapus</button>
-  </div>
-  <div class="progress"><div id="progressBar"></div></div>
-  <div id="processText" class="muted">Belum ada lembar diproses.</div>
-</section>
+      <label class="filebox">
+        <input id="fileInput" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple>
+        <span class="filebutton">Pilih File</span>
+        <span id="fileNames">Belum ada file dipilih</span>
+      </label>
 
-<section class="card">
-  <div class="sectionHead"><h2>3. Hasil penilaian</h2><button id="csv" class="secondary">Ekspor CSV</button></div>
-  <div class="summary">
-    <div><span>Lembar selesai</span><b id="countDone">0</b></div>
-    <div><span>Total nilai</span><b id="sumScore">0</b></div>
-    <div><span>Rata-rata</span><b id="avgScore">0.0</b></div>
-  </div>
-  <div id="results" class="results"><div class="empty">Belum ada hasil.</div></div>
-</section>
+      <div class="actions">
+        <button id="startBtn" class="primary" type="button">Mulai Penilaian</button>
+        <button id="clearBtn" class="secondary" type="button">Hapus</button>
+      </div>
 
-<section class="card">
-  <div class="sectionHead"><h2>4. Kunci penilaian</h2><button id="resetRubric" class="secondary">Kembalikan contoh</button></div>
-  <p class="muted">Pisahkan kata/frasa dengan koma. Nilai berdasarkan konsep yang ditemukan, bukan panjang tulisan.</p>
-  <div id="rubric"></div>
-</section>
+      <div id="progressWrap" class="progress-wrap hidden">
+        <div class="progress-head">
+          <span id="progressText">Menyiapkan...</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+      </div>
 
-<footer>OCR berjalan di browser. Pertama kali model perlu diunduh dan dapat lebih lama; setelah tersimpan di cache, pemrosesan berikutnya lebih cepat.</footer>
-</main>
-<script type="module" src="app.js"></script>
+      <div id="message" class="message">Belum ada lembar diproses.</div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>3. Hasil penilaian</h2>
+        <button id="csvBtn" class="secondary" type="button">Ekspor CSV</button>
+      </div>
+      <div class="stats">
+        <div><span>Lembar selesai</span><strong id="count">0</strong></div>
+        <div><span>Total nilai</span><strong id="total">0</strong></div>
+        <div><span>Rata-rata</span><strong id="average">0.0</strong></div>
+      </div>
+      <div id="results" class="results-empty">Belum ada hasil.</div>
+    </section>
+
+    <section class="card">
+      <h2>4. Kunci penilaian</h2>
+      <p class="muted">Kata kunci dipisahkan dengan koma. Sistem memberi skor berdasarkan kecocokan kata kunci pada jawaban yang terbaca.</p>
+      <div class="rubric-grid" id="rubricGrid"></div>
+      <button id="saveRubric" class="secondary" type="button">Simpan Kunci</button>
+    </section>
+
+    <footer>Penilaian lokal • tanpa API key • maksimal 10 foto per proses</footer>
+  </main>
+  <script src="./app.js" defer></script>
 </body>
 </html>
