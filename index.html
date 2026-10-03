@@ -18,82 +18,17 @@
   <header class="header">
     <div class="container">
       <h1>🤖 AI Penilai Lembar Jawaban</h1>
-      <p>
-        Penilaian otomatis lembar jawaban Seni Budaya
-      </p>
+      <p>Penilaian otomatis lembar jawaban Seni Budaya</p>
     </div>
   </header>
 
 
   <main class="container">
 
-    <!-- DATA SISWA -->
+    <!-- FOTO DARI KAMERA -->
     <section class="card">
 
-      <h2>1. Data Siswa</h2>
-
-      <div class="grid">
-
-        <div>
-          <label for="name">
-            Nama Siswa
-          </label>
-
-          <input
-            type="text"
-            id="name"
-            placeholder="Masukkan nama siswa"
-          >
-        </div>
-
-
-        <div>
-          <label for="number">
-            Nomor Peserta
-          </label>
-
-          <input
-            type="text"
-            id="number"
-            placeholder="Nomor peserta"
-          >
-        </div>
-
-
-        <div>
-          <label for="class2">
-            Kelas
-          </label>
-
-          <input
-            type="text"
-            id="class2"
-            placeholder="Contoh: X IPA 1"
-          >
-        </div>
-
-
-        <div>
-          <label for="kelas">
-            Mata Pelajaran
-          </label>
-
-          <input
-            type="text"
-            id="kelas"
-            value="Seni Budaya"
-          >
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- KAMERA -->
-    <section class="card">
-
-      <h2>2. Foto dari Kamera</h2>
+      <h2>1. Foto dari Kamera</h2>
 
       <p class="meta">
         Gunakan kamera untuk memotret lembar jawaban.
@@ -109,13 +44,13 @@
     </section>
 
 
-    <!-- UPLOAD -->
+    <!-- UPLOAD FOTO -->
     <section class="card">
 
-      <h2>3. Upload Lembar Jawaban</h2>
+      <h2>2. Upload Lembar Jawaban</h2>
 
       <p class="meta">
-        Bisa memilih hingga 10 foto sekaligus.
+        Pilih hingga 10 foto sekaligus.
       </p>
 
       <input
@@ -125,10 +60,7 @@
         multiple
       >
 
-      <div
-        id="fileList"
-        class="file-list"
-      ></div>
+      <div id="fileList" class="file-list"></div>
 
     </section>
 
@@ -136,7 +68,7 @@
     <!-- PROSES -->
     <section class="card">
 
-      <h2>4. Proses Penilaian</h2>
+      <h2>3. Penilaian AI</h2>
 
       <button
         id="process"
@@ -151,10 +83,7 @@
         style="display:none;"
       >
 
-        <div
-          id="progressText"
-          class="meta"
-        >
+        <div id="progressText" class="meta">
           Menyiapkan penilaian...
         </div>
 
@@ -170,10 +99,7 @@
 
       </div>
 
-      <div
-        id="msg"
-        class="meta"
-      >
+      <div id="msg" class="meta">
         Belum ada foto yang diproses.
       </div>
 
@@ -183,7 +109,7 @@
     <!-- HASIL -->
     <section class="card">
 
-      <h2>5. Hasil Penilaian</h2>
+      <h2>4. Hasil Penilaian</h2>
 
       <div id="answers"></div>
 
@@ -193,7 +119,7 @@
     <!-- EXPORT -->
     <section class="card">
 
-      <h2>6. Export Hasil</h2>
+      <h2>5. Export Hasil</h2>
 
       <button
         id="csv"
@@ -209,18 +135,11 @@
 
   <footer class="footer">
 
-    <p>
-      AI Penilai Lembar Jawaban
-    </p>
-
-    <p class="meta">
-      Penilaian berbasis kesesuaian jawaban siswa dengan rubrik.
-    </p>
+    <p>AI Penilai Lembar Jawaban</p>
 
   </footer>
 
 
-  <!-- JAVASCRIPT -->
   <script src="app.js"></script>
 
 </body>
