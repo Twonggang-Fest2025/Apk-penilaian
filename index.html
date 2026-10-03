@@ -3,170 +3,234 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Penilai Ujian Seni Budaya</title>
+<title>NilaiKita Pro — Penilai Lembar Jawaban</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f5f7;color:#1f2937}
-.wrap{max-width:1000px;margin:auto;padding:20px}.card{background:#fff;border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 3px 14px #00000012}
-h1{margin:0 0 8px}.muted{color:#6b7280}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-label{font-weight:700;display:block;margin-bottom:6px}input,select,button{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:15px}
-button{cursor:pointer;background:#111827;color:white;border:0;font-weight:700}.secondary{background:#e5e7eb;color:#111827}.danger{background:#b91c1c}.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-.progress{height:10px;background:#e5e7eb;border-radius:20px;overflow:hidden}.bar{height:100%;width:0;background:#2563eb}
-table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border-bottom:1px solid #e5e7eb;padding:10px;text-align:left;vertical-align:top}
-.badge{display:inline-block;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:700}.ok{background:#dcfce7;color:#166534}.cek{background:#fef3c7;color:#92400e}
-.preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:12px}.preview img{width:100%;height:120px;object-fit:cover;border-radius:10px}
-.small{font-size:13px}.score{font-size:28px;font-weight:800}.hidden{display:none}
+:root{--bg:#080a11;--panel:#101522;--panel2:#151b2a;--line:#273044;--text:#f7f8fc;--muted:#9ba6b8;--purple:#8b5cf6;--blue:#6366f1;--green:#22c55e;--yellow:#f59e0b;--red:#ef4444}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 20% -10%,#24154e 0,#080a11 55%),#080a11;color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.container{max-width:1250px;margin:auto;padding:24px 16px 60px}.top{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:20px}.logo{font-size:28px;font-weight:850;letter-spacing:-1px}.logo i{font-style:normal;color:#a78bfa}.sub{color:var(--muted);font-size:13px;margin-top:4px}.pill{padding:9px 13px;border:1px solid #3b3561;background:#17132b;border-radius:999px;color:#c4b5fd;font-size:12px}
+.layout{display:grid;grid-template-columns:360px 1fr;gap:18px}.card{background:rgba(16,21,34,.94);border:1px solid var(--line);border-radius:20px;padding:19px;box-shadow:0 20px 70px #0005}.card h2{font-size:16px;margin:0 0 15px}
+label{display:block;color:#b9c1d0;font-size:12px;margin:12px 0 7px}select,input[type=file]{width:100%;padding:12px;background:#0a0e17;border:1px solid var(--line);border-radius:12px;color:#fff}input[type=file]{display:none}
+.drop{border:1.5px dashed #46516b;border-radius:16px;padding:24px 14px;text-align:center;background:#0b0f18;cursor:pointer}.drop:hover{border-color:var(--purple)}.drop b{display:block;margin-bottom:5px}.drop small{color:var(--muted)}
+.btn{width:100%;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;font-weight:800;cursor:pointer;margin-top:10px}.btn.alt{background:#20283a;border:1px solid #30394d}.btn:disabled{opacity:.45;cursor:not-allowed}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}.thumb{width:57px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.help{font-size:11px;line-height:1.55;color:var(--muted);margin-top:13px}.notice{padding:11px 12px;background:#11182a;border:1px solid #2c3750;border-radius:12px;color:#b9c4d6;font-size:11px;line-height:1.5;margin-top:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.stat{padding:13px;border-radius:14px;background:#0d121e;border:1px solid var(--line)}.stat strong{font-size:23px}.stat span{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.progress{height:7px;background:#222a3a;border-radius:99px;overflow:hidden}.bar{height:100%;width:0;background:linear-gradient(90deg,#8b5cf6,#6366f1);transition:.25s}.status{font-size:12px;color:var(--muted);padding:11px 0}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:820px}th,td{padding:11px 9px;border-bottom:1px solid #242d40;text-align:left;font-size:12px;vertical-align:middle}th{color:#aeb8ca;background:#0d121d;position:sticky;top:0}.name{font-weight:750}.score{font-size:17px;font-weight:850}.ok{color:var(--green)}.review{color:var(--yellow)}.low{color:var(--red)}.mini{color:#8793a8;font-size:10px}
+details{margin-top:5px}summary{cursor:pointer;color:#b9a7ff}.ocr{white-space:pre-wrap;background:#090d15;padding:9px;border-radius:8px;color:#b9c4d5;max-height:180px;overflow:auto;font-size:10px}
+.empty{text-align:center;color:var(--muted);padding:30px 10px}.qscore{font-weight:700}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
-<div class="wrap">
-<div class="card">
-<h1>Penilai Ujian Seni Budaya</h1>
-<div class="muted">Versi gratis — pemrosesan dilakukan di browser. Tidak memakai API berbayar.</div>
-</div>
+<div class="container">
+<header class="top">
+ <div><div class="logo">Nilai<i>Kita</i> Pro</div><div class="sub">Penilaian otomatis lembar jawaban Seni Budaya • hingga 20 lembar</div></div>
+ <div class="pill">GitHub Pages • Gratis</div>
+</header>
 
-<div class="card">
-<div class="grid">
-<div><label>Kelas</label><select id="kelas"><option value="X">X — Seni Rupa</option><option value="XI">XI — Seni Tari</option><option value="XII">XII — Seni Musik</option></select></div>
-<div><label>Nama / ID Siswa</label><input id="siswa" placeholder="Contoh: Andi / X-01"></div>
-<div><label>Foto lembar jawaban</label><input id="files" type="file" accept="image/*" multiple></div>
-</div>
-<p class="small muted">Untuk banyak lembar sekaligus, pilih beberapa foto dari galeri. Foto yang jelas, lurus, dan cukup terang akan lebih mudah dibaca OCR.</p>
-<div id="preview" class="preview"></div>
-<div class="actions" style="margin-top:14px">
-<button id="nilaiBtn">NILAI SEKARANG</button>
-<button id="exportBtn" class="secondary">EXPORT CSV</button>
-<button id="hapusBtn" class="danger">HAPUS REKAP</button>
-</div>
-<div style="margin-top:14px"><div class="progress"><div id="bar" class="bar"></div></div><p id="status" class="small muted">Siap.</p></div>
-</div>
+<div class="layout">
+<aside class="card">
+ <h2>Pengaturan Penilaian</h2>
+ <label>Mata pelajaran / kelas</label>
+ <select id="subject">
+  <option value="X">Seni Rupa — Kelas X</option>
+  <option value="XI">Seni Tari — Kelas XI</option>
+  <option value="XII">Seni Musik — Kelas XII</option>
+ </select>
+ <label>Foto lembar jawaban</label>
+ <div class="drop" id="drop"><b>📷 Pilih sampai 20 foto</b><small>JPG / JPEG / PNG • bisa sekaligus</small><input id="files" type="file" accept="image/*" multiple></div>
+ <div class="thumbs" id="thumbs"></div>
+ <button class="btn" id="start" disabled>Mulai Penilaian</button>
+ <button class="btn alt" id="clear">Bersihkan</button>
+ <button class="btn alt" id="export" disabled>⬇️ Export Excel</button>
+ <div class="notice"><b>Bagaimana nilainya dihitung?</b><br>
+ Setiap soal bernilai 20. Sistem mencari konsep/kata kunci utama dan kemiripan kata, sehingga kalimat siswa tidak harus sama persis dengan kunci. Jawaban yang tidak terbaca atau hasilnya rendah ditandai <b>Periksa</b>.
+ </div>
+ <div class="help">OCR tulisan tangan tidak selalu sempurna. Untuk penilaian resmi, guru tetap perlu memeriksa hasil yang ditandai. Foto diproses di browser; aplikasi ini tidak mempunyai database siswa.</div>
+</aside>
 
-<div class="card">
-<h2>Hasil Penilaian</h2>
-<div id="hasil" class="muted">Belum ada hasil.</div>
-</div>
-
-<div class="card">
-<h2>Catatan</h2>
-<p class="small">Aplikasi ini memakai OCR dan pencocokan konsep/kata kunci di perangkat. Ini bukan AI penilai semantik penuh. Jawaban yang tulisannya sulit dibaca atau konsepnya ambigu dapat diberi status <b>PERLU CEK</b> agar diperiksa guru.</p>
+<main class="card">
+ <h2>Hasil Penilaian</h2>
+ <div class="stats">
+  <div class="stat"><strong id="n">0</strong><span>Lembar</span></div>
+  <div class="stat"><strong id="avg">0</strong><span>Rata-rata</span></div>
+  <div class="stat"><strong id="max">0</strong><span>Tertinggi</span></div>
+  <div class="stat"><strong id="review">0</strong><span>Perlu cek</span></div>
+ </div>
+ <div class="progress"><div class="bar" id="bar"></div></div>
+ <div class="status" id="status">Belum ada lembar yang diperiksa.</div>
+ <div id="results" class="tablewrap"><div class="empty">Nama, nilai nomor 1–5, total, dan status akan muncul di sini.</div></div>
+</main>
 </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-const RUBRIK={
+/*
+  KUNCI JAWABAN:
+  Setiap nomor mempunyai beberapa konsep/kata kunci yang dapat diterima.
+  Skor nomor = proporsi konsep yang terdeteksi x 20.
+  Tambahkan sinonim ke array jika ingin sistem lebih longgar.
+*/
+const ANSWERS={
 X:[
-["pengertian seni","ekspresi manusia","perasaan","pikiran","gagasan","kreativitas","karya"],
-["prinsip seni rupa","kesatuan","unity","keseimbangan","balance","proporsi","irama","ritme","harmoni","penekanan","komposisi"],
-["unsur seni rupa","titik","garis","bidang","bentuk","gelap terang","tekstur","warna"],
-["jenis warna","primer","merah","kuning","biru","sekunder","hijau","oranye","ungu","tersier","netral"],
-["seni rupa murni terapan","murni","ekspresi","keindahan","terapan","fungsi","kegunaan","praktis"]
+ {keys:["pengertian seni","karya","ekspresi","ungkapan","audio","visual","sastra","perasaan"]},
+ {keys:["prinsip","kesatuan","keseimbangan","irama","penekanan","proporsi","keselarasan","komposisi"]},
+ {keys:["titik","garis","bidang","bentuk","gelap terang","tekstur","warna"]},
+ {keys:["primer","sekunder","tersier","merah","kuning","biru","hijau","ungu","jingga"]},
+ {keys:["seni rupa murni","seni rupa terapan","keindahan","fungsi","lukisan","patung","kriya","kerajinan"]}
 ],
 XI:[
-["seni ekspresi","ekspresi","perasaan","pikiran","gagasan","pengalaman","karya"],
-["tenaga ruang waktu","tenaga","energi","ruang","arah","level","jangkauan","waktu","tempo","ritme","durasi"],
-["wiraga wirama wirasa","wiraga","gerak","wirama","irama","tempo","wirasa","perasaan","penghayatan","ekspresi"],
-["imitatif imajinatif","imitatif","meniru","tiruan","objek","hewan","imajinatif","imajinasi","khayalan"],
-["komposisi tari","tema","ide","eksplorasi","improvisasi","komposisi","penataan","pola lantai","evaluasi","penampilan"]
+ {keys:["seni","ekspresi","perasaan","pikiran","medium","kehidupan"]},
+ {keys:["tenaga","ruang","waktu","kuat","lemah","arah","level","tempo","durasi"]},
+ {keys:["wiraga","wirasa","wirama","gerak","perasaan","irama","ekspresi"]},
+ {keys:["imitatif","imajinatif","meniru","binatang","alam","khayalan","imajinasi"]},
+ {keys:["komposisi","gerak","pola lantai","ruang","tenaga","waktu","iringan","desain","gerak"]}
 ],
 XII:[
-["jenis musik","klasik","tradisional","turun temurun","modern","zaman","teknologi","kontemporer","eksploratif"],
-["unsur musik","melodi","tinggi rendah","ritme","irama","tempo","dinamika","harmoni","timbre","warna suara","bentuk","struktur","tekstur"],
-["fungsi alat musik","melodi","melodis","melodi utama","harmoni","harmonis","akor","iringan","ritmis","ritme","ketukan"],
-["cara memainkan","pukul","dipukul","petik","dipetik","gesek","digesek","tiup","ditiup","tekan","ditekan","goyang","digoyang"],
-["sumber bunyi","idiophone","badan alat","membranophone","membran","selaput","chordophone","senar","dawai","aerophone","udara","electrophone","elektronik"]
+ {keys:["musik klasik","tradisional","modern","kontemporer","zaman","budaya","teknologi","perkembangan"]},
+ {keys:["tempo","ritme","irama","melodi","harmoni","dinamika","timbre","bentuk","tekstur","nada"]},
+ {keys:["melodis","harmonis","ritmis","melodi","harmoni","akor","irama","pengiring"]},
+ {keys:["dipukul","dipetik","ditiup","digesek","ditekan","cara memainkan","memainkan"]},
+ {keys:["sumber bunyi","idiofon","membranofon","kordofon","aerofon","elektrofon","getaran","dawai","selaput","udara"]}
 ]};
 
+let files=[], results=[];
+
 const $=id=>document.getElementById(id);
-let selected=[];
-$("files").addEventListener("change",e=>{
- selected=[...e.target.files];
- $("preview").innerHTML="";
- selected.forEach(f=>{
-   const img=document.createElement("img"); img.src=URL.createObjectURL(f); $("preview").appendChild(img);
- });
- $("status").textContent=selected.length?selected.length+" foto dipilih.":"Belum ada foto.";
-});
+$("drop").onclick=()=>$("files").click();
+$("files").onchange=e=>selectFiles([...e.target.files]);
+$("drop").ondragover=e=>{e.preventDefault()};
+$("drop").ondrop=e=>{e.preventDefault();selectFiles([...e.dataTransfer.files])};
 
-function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s-]/g," ").replace(/\s+/g," ").trim();}
-function splitAnswers(text){
- let t=text.replace(/\r/g,"\n");
- let parts=t.split(/(?:^|\n)\s*(?:jawaban\s*)?([1-5])\s*[\.\):\-]/i).filter(Boolean);
- if(parts.length>=10){
-   let a=[]; for(let i=1;i<parts.length;i+=2)a.push(parts[i+1]||""); return a.slice(0,5);
+function selectFiles(fs){
+ files=fs.filter(f=>f.type.startsWith("image/")).slice(0,20);
+ $("thumbs").innerHTML="";
+ files.forEach(f=>{let i=document.createElement("img");i.className="thumb";i.src=URL.createObjectURL(f);$("thumbs").appendChild(i)});
+ $("start").disabled=!files.length;
+ $("status").textContent=files.length?`${files.length} foto siap dinilai.`:"Belum ada foto.";
+}
+
+function norm(s){return s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim()}
+function words(s){return new Set(norm(s).split(" ").filter(x=>x.length>2))}
+function hitConcept(text,key){
+ const t=norm(text), k=norm(key);
+ if(t.includes(k)) return true;
+ const kw=k.split(" ");
+ if(kw.length===1){
+   const ws=words(text);
+   for(const w of ws) if(w===kw[0] || similarity(w,kw[0])>=0.86) return true;
  }
- let lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean);
- let a=[[],[],[],[],[]];
- let found=false;
- lines.forEach(line=>{
-   let m=line.match(/^\s*([1-5])\s*[\.\):\-]\s*(.*)$/);
-   if(m){found=true;a[+m[1]-1].push(m[2]);}
-   else if(found){a[a.findIndex(x=>x.length===0)>=0?a.findIndex(x=>x.length===0):4].push(line);}
- });
- if(found)return a.map(x=>x.join(" "));
- let n=Math.max(1,Math.ceil(t.length/5)); return [0,1,2,3,4].map(i=>t.slice(i*n,(i+1)*n));
+ return false;
 }
-function scoreAnswer(ans, keys){
- const n=norm(ans); let hits=0;
- keys.slice(1).forEach(k=>{if(n.includes(norm(k)))hits++;});
- let score=Math.min(20,Math.round(hits*3.2));
- if(n.replace(/\s/g,"").length>80 && hits>=3)score=Math.min(20,score+3);
- if(hits>=6)score=20;
- return {score,hits,short:n.replace(/\s/g,"").length<40};
+function similarity(a,b){
+ if(a===b)return 1;
+ if(Math.abs(a.length-b.length)>3)return 0;
+ let dp=Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+ for(let i=0;i<=a.length;i++)dp[i][0]=i;
+ for(let j=0;j<=b.length;j++)dp[0][j]=j;
+ for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)
+  dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+ return 1-dp[a.length][b.length]/Math.max(a.length,b.length);
 }
-function renderResult(rows){
- if(!rows.length){$("hasil").textContent="Belum ada hasil.";return;}
- let h="<table><thead><tr><th>Siswa</th><th>Kelas</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>Status</th></tr></thead><tbody>";
- rows.slice().reverse().forEach(r=>{
-   h+=`<tr><td>${esc(r.siswa)}</td><td>${r.kelas}</td>${r.scores.map(x=>`<td>${x}</td>`).join("")}<td><b>${r.total}</b></td><td><span class="badge ${r.status==="OK"?"ok":"cek"}">${r.status}</span></td></tr>`;
- });
- h+="</tbody></table>"; $("hasil").innerHTML=h;
+function splitAnswers(text){
+ let s=text.replace(/\r/g,"").replace(/[|]/g,"\n");
+ let marks=[...s.matchAll(/(?:^|\n|\s)([1-5])\s*[\.\):\-]/g)];
+ if(marks.length>=2){
+  let out={};
+  for(let i=0;i<marks.length;i++){
+   let q=Number(marks[i][1]), a=marks[i].index+marks[i][0].lastIndexOf(marks[i][1])+1;
+   let end=i+1<marks.length?marks[i+1].index:s.length;
+   out[q]=s.slice(a,end).trim();
+  }
+  return out;
+ }
+ // Fallback: split roughly into 5 chunks if OCR lost numbering.
+ let lines=s.split("\n").map(x=>x.trim()).filter(Boolean);
+ let out={}; let size=Math.max(1,Math.ceil(lines.length/5));
+ for(let i=1;i<=5;i++)out[i]=lines.slice((i-1)*size,i*size).join(" ");
+ return out;
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function getRows(){try{return JSON.parse(localStorage.getItem("nilaiSeniBudayaGratis")||"[]")}catch{return[]}}
-function saveRows(r){localStorage.setItem("nilaiSeniBudayaGratis",JSON.stringify(r));renderResult(r);}
-renderResult(getRows());
-
-$("nilaiBtn").onclick=async()=>{
- if(!selected.length){alert("Pilih foto lembar jawaban dulu.");return;}
- let siswa=$("siswa").value.trim()||"Tanpa Nama", kelas=$("kelas").value;
- $("nilaiBtn").disabled=true;
- let all="", worker=null;
- try{
-   $("status").textContent="Memuat OCR bahasa Indonesia...";
-   worker=await Tesseract.createWorker("ind");
-   for(let i=0;i<selected.length;i++){
-     $("status").textContent=`Membaca foto ${i+1} dari ${selected.length}...`;
-     const ret=await worker.recognize(selected[i]);
-     all+="\n"+ret.data.text+"\n";
-     $("bar").style.width=((i+1)/selected.length*70)+"%";
-   }
-   await worker.terminate(); worker=null;
-   $("status").textContent="Menghitung nilai...";
-   const ans=splitAnswers(all), scores=ans.map((a,i)=>scoreAnswer(a,RUBRIK[kelas][i]));
-   const vals=scores.map(x=>x.score), total=vals.reduce((a,b)=>a+b,0);
-   const perlu=scores.some(x=>x.short)||scores.filter(x=>x.hits<3).length>=2;
-   const row={siswa,kelas,scores:vals,total,status:perlu?"PERLU CEK":"OK",tanggal:new Date().toLocaleString("id-ID")};
-   const rows=getRows(); rows.push(row); saveRows(rows);
-   $("status").textContent=`Selesai. Total ${total}/100 — ${row.status}.`;
-   $("bar").style.width="100%";
- }catch(e){
-   if(worker)try{await worker.terminate()}catch{}
-   console.error(e); $("status").textContent="Gagal memproses: "+e.message;
-   alert("Gagal membaca foto. Coba gunakan foto yang lebih jelas dan koneksi internet yang stabil untuk memuat OCR.");
- }finally{$("nilaiBtn").disabled=false;}
+function gradeQuestion(text, q){
+ if(!text || text.length<3)return 0;
+ let arr=ANSWERS[$("subject").value][q-1].keys;
+ let hits=arr.filter(k=>hitConcept(text,k));
+ // Require multiple concepts where possible, but award partial credit.
+ let ratio=hits.length/Math.max(3,Math.ceil(arr.length*.55));
+ return Math.round(Math.min(1,ratio)*20);
+}
+function findName(text){
+ const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ for(const l of lines) if(/(?:nama|name)\s*[:\-]/i.test(l)){
+   const n=l.replace(/.*?(?:nama|name)\s*[:\-]?\s*/i,"").trim();
+   if(n.length>1)return n;
+ }
+ for(const l of lines.slice(0,10)){
+   if(l.length>=3&&l.length<=45&&!/(asesmen|sumatif|semester|seni|budaya|kelas|tanggal|jawaban|tahun|ajaran)/i.test(l))return l;
+ }
+ return "Nama tidak terbaca";
+}
+async function recognize(file){
+ const r=await Tesseract.recognize(file,"ind",{logger:m=>{
+   if(m.status==="recognizing text") window.currentOCR=m.progress||0;
+ }});
+ return r.data.text||"";
+}
+async function runPool(items, worker, concurrency=3){
+ let next=0;
+ async function one(){
+  while(true){let i=next++;if(i>=items.length)return;await worker(items[i],i)}
+ }
+ await Promise.all(Array.from({length:Math.min(concurrency,items.length)},one));
+}
+$("start").onclick=async()=>{
+ $("start").disabled=true;$("clear").disabled=true;$("export").disabled=true;results=[];
+ const subject=$("subject").value;
+ let done=0;
+ await runPool(files,async(file,i)=>{
+   $("status").textContent=`Membaca ${i+1}/${files.length}: ${file.name}`;
+   let text="";
+   try{text=await recognize(file)}catch(e){}
+   const parts=splitAnswers(text);
+   let qs=[1,2,3,4,5].map(q=>gradeQuestion(parts[q]||"",q));
+   let total=qs.reduce((a,b)=>a+b,0);
+   let flag=qs.some(x=>x<12)||!text||findName(text)==="Nama tidak terbaca";
+   results[i]={no:i+1,name:findName(text),q:qs,total,status:flag?"Periksa":"OK",ocr:text};
+   done++;$("bar").style.width=(done/files.length*100)+"%";
+ },3);
+ render();
+ $("start").disabled=false;$("clear").disabled=false;$("export").disabled=false;
 };
-
-$("hapusBtn").onclick=()=>{
- if(confirm("Hapus seluruh rekap yang tersimpan di browser ini?")){localStorage.removeItem("nilaiSeniBudayaGratis");renderResult([]);$("status").textContent="Rekap dihapus.";}
+function render(){
+ const sorted=[...results].sort((a,b)=>b.total-a.total);
+ $("n").textContent=results.length;
+ $("avg").textContent=results.length?Math.round(results.reduce((a,b)=>a+b.total,0)/results.length):0;
+ $("max").textContent=results.length?Math.max(...results.map(x=>x.total)):0;
+ $("review").textContent=results.filter(x=>x.status==="Periksa").length;
+ if(!results.length){$("results").innerHTML='<div class="empty">Belum ada hasil.</div>';return}
+ $("status").textContent=`Selesai menilai ${results.length} lembar. Urutan ditampilkan berdasarkan nilai tertinggi.`;
+ let rows=sorted.map((r,i)=>{
+   let c=r.total>=75?"ok":r.total>=55?"review":"low";
+   return `<tr><td>${i+1}</td><td class="name">${esc(r.name)}<div class="mini">Lembar ${r.no}</div></td>
+   ${r.q.map(x=>`<td class="qscore ${x<12?"review":"ok"}">${x}</td>`).join("")}
+   <td><span class="score ${c}">${r.total}</span></td><td class="${r.status==="OK"?"ok":"review"}">${r.status}</td>
+   <td><details><summary>OCR</summary><div class="ocr">${esc(r.ocr||"Tidak terbaca")}</div></details></td></tr>`;
+ }).join("");
+ $("results").innerHTML=`<table><thead><tr><th>No</th><th>Nama</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>Status</th><th>Detail</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+$("export").onclick=()=>{
+ const data=results.map(r=>({No:r.no,Nama:r.name,Q1:r.q[0],Q2:r.q[1],Q3:r.q[2],Q4:r.q[3],Q5:r.q[4],Total:r.total,Status:r.status}));
+ const ws=XLSX.utils.json_to_sheet(data), wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"Hasil Penilaian");
+ XLSX.writeFile(wb,"Hasil_Penilaian_Seni_Budaya.xlsx");
 };
-$("exportBtn").onclick=()=>{
- const rows=getRows(); if(!rows.length){alert("Belum ada data.");return;}
- let csv="Nama/ID,Kelas,Q1,Q2,Q3,Q4,Q5,Total,Status,Tanggal\n";
- rows.forEach(r=>csv+=[r.siswa,r.kelas,...r.scores,r.total,r.status,r.tanggal].map(x=>`"${String(x).replace(/"/g,'""')}"`).join(",")+"\n");
- const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="rekap-nilai-seni-budaya.csv";a.click();URL.revokeObjectURL(a.href);
+$("clear").onclick=()=>{
+ files=[];results=[];$("files").value="";$("thumbs").innerHTML="";$("results").innerHTML='<div class="empty">Nama, nilai nomor 1–5, total, dan status akan muncul di sini.</div>';
+ $("start").disabled=true;$("export").disabled=true;$("bar").style.width="0";$("n").textContent="0";$("avg").textContent="0";$("max").textContent="0";$("review").textContent="0";$("status").textContent="Belum ada lembar yang diperiksa.";
 };
 </script>
 </body>
 </html>
-
