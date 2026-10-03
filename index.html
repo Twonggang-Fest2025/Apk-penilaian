@@ -1,1085 +1,164 @@
-// ============================================================
-// AI PENILAI LEMBAR JAWABAN SENI BUDAYA
-// ============================================================
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NilaiLembar — Penilai Lembar Jawaban</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#718096;--line:#e5e9f0;--primary:#243b7a;--primary2:#536dbe;--ok:#087443;--warn:#a15c00;--shadow:0 12px 35px rgba(21,34,62,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.top{background:linear-gradient(135deg,#111827 0%,#263b6f 58%,#536dbe 100%);color:#fff;padding:24px 18px 32px}
+.topin{max-width:1120px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:13px}.mark{width:46px;height:46px;border-radius:14px;background:#fff;color:#263b6f;display:grid;place-items:center;font-weight:900;font-size:25px;box-shadow:0 7px 20px #0002}
+h1{font-size:23px;margin:0}.subtitle{font-size:12px;color:#dbe4f6;margin-top:4px}.free{font-size:11px;font-weight:850;letter-spacing:.08em;border:1px solid #ffffff40;border-radius:999px;padding:8px 12px;background:#ffffff12}
+.wrap{max-width:1120px;margin:-12px auto 30px;padding:0 16px}.card{background:var(--card);border:1px solid var(--line);border-radius:19px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:16px}.head h2{font-size:17px;margin:0}.head p{font-size:12px;color:var(--muted);margin:5px 0 0}.pill{font-size:11px;font-weight:800;color:var(--primary);background:#eef2ff;border-radius:999px;padding:7px 10px;white-space:nowrap}
+.drop{min-height:165px;border:1.8px dashed #b9c5d8;border-radius:16px;background:linear-gradient(180deg,#fbfcff,#f7f9fd);display:grid;place-items:center;text-align:center;cursor:pointer;transition:.18s}.drop:hover{border-color:#627bc4;transform:translateY(-1px)}.drop input{display:none}.uploadicon{font-size:38px;color:var(--primary2);line-height:1}.drop strong{display:block;font-size:15px;margin-top:7px}.drop span{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.filebar{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12px;color:var(--muted)}.filegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:10px}.file{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px;background:#fff}.thumb{width:43px;height:43px;border-radius:8px;object-fit:cover;background:#eef1f5}.fname{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fstate{font-size:10px;color:var(--muted);margin-top:2px}
+.actions{display:flex;gap:8px;margin-top:14px}.btn{border:0;border-radius:11px;padding:11px 15px;font-weight:800;cursor:pointer}.btn:disabled{opacity:.42;cursor:not-allowed}.primary{background:var(--primary);color:#fff}.secondary{background:#edf1f7;color:#253149}.success{background:#087f5b;color:#fff}
+.progressbox{margin-top:15px;padding:12px;background:#f8faff;border:1px solid #e5eaf3;border-radius:12px}.proghead{display:flex;justify-content:space-between;font-size:12px;font-weight:750}.track{height:8px;background:#e7ebf2;border-radius:99px;overflow:hidden;margin:8px 0}.track>div{height:100%;width:0;background:linear-gradient(90deg,#536dbe,#243b7a);transition:width .2s}.statusline{font-size:10px;color:var(--muted)}.msg{font-size:12px;margin-top:9px}.msg.err{color:#b42318}.msg.ok{color:var(--ok)}
+.hidden{display:none}.rubricgrid{display:grid;gap:8px}.rub{border:1px solid var(--line);border-radius:13px;padding:11px}.rub strong{font-size:12px}.rub textarea{width:100%;min-height:54px;margin-top:7px;border:1px solid #d8dee8;border-radius:9px;padding:8px;resize:vertical;font:inherit;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px}.stat{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fbfcfe}.stat small{display:block;color:var(--muted);font-size:10px}.stat b{display:block;font-size:22px;margin-top:2px}
+.result{border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-top:10px}.rhead{padding:13px 15px;background:#f8fafc;display:flex;justify-content:space-between;gap:15px;align-items:center}.rname{font-weight:850;font-size:14px}.rfile{font-size:10px;color:var(--muted);margin-top:2px}.rtotal{font-size:23px;font-weight:900;text-align:right}.rstatus{font-size:9px;font-weight:850;text-align:right}.ok{color:var(--ok)}.warn{color:var(--warn)}
+.answers{padding:9px 12px}.answer{display:grid;grid-template-columns:36px 1fr 50px;gap:8px;padding:9px 4px;border-bottom:1px solid #edf0f4}.answer:last-child{border-bottom:0}.q{font-weight:850;color:var(--primary);font-size:12px}.atext{font-size:11px;line-height:1.45;color:#4c586d;white-space:pre-wrap}.anote{font-size:9px;color:#8b95a5;margin-top:2px}.ascore{text-align:right;font-weight:850;font-size:12px}
+.empty{border:1px dashed #cbd4e2;border-radius:14px;padding:35px 15px;text-align:center;color:var(--muted);font-size:12px}.empty b{display:block;color:#526075;font-size:14px;margin-bottom:4px}
+footer{text-align:center;color:#8993a3;font-size:10px;padding:0 15px 28px}
+@media(max-width:680px){.top{padding:20px 15px 28px}.free{display:none}.wrap{padding:0 10px}.card{padding:15px;border-radius:15px}.stats{grid-template-columns:repeat(2,1fr)}.head{flex-direction:column}.answer{grid-template-columns:31px 1fr 45px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div class="brand"><div class="mark">✓</div><div><h1>NilaiLembar</h1><div class="subtitle">Penilai lembar jawaban • cepat • lokal • tanpa API key</div></div></div><div class="free">GRATIS</div></div></header>
 
-const MODELS = [
-  "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-3.6-flash"
+<main class="wrap">
+<section class="card">
+ <div class="head"><div><h2>Unggah lembar jawaban</h2><p>Pilih sampai 10 foto sekaligus. Hasil setiap lembar langsung muncul setelah selesai diproses.</p></div><div class="pill">maks. 500 lembar / sesi</div></div>
+ <label class="drop"><input id="picker" type="file" accept="image/*" multiple><div><div class="uploadicon">＋</div><strong>Pilih foto lembar jawaban</strong><span>JPG, JPEG, PNG • foto tetap diproses di perangkat</span></div></label>
+ <div class="filebar"><span id="counter">0 lembar dipilih</span><span>Disarankan 10 lembar per unggahan</span></div>
+ <div id="filegrid" class="filegrid"></div>
+ <div class="actions"><button id="start" class="btn primary" disabled>Mulai Penilaian</button><button id="clear" class="btn secondary" disabled>Hapus</button></div>
+ <div id="progressbox" class="progressbox hidden"><div class="proghead"><span id="progtxt">Menyiapkan...</span><span id="pct">0%</span></div><div class="track"><div id="bar"></div></div><div id="detail" class="statusline">OCR lokal sedang disiapkan.</div></div>
+ <div id="msg" class="msg"></div>
+</section>
+
+<section class="card">
+ <div class="head"><div><h2>Kunci penilaian</h2><p>Ubah kata kunci sesuai soal Bapak. Maksimal 20 poin setiap soal.</p></div><button id="reset" class="btn secondary">Kembalikan contoh</button></div>
+ <div id="rubricgrid" class="rubricgrid"></div>
+</section>
+
+<section class="card">
+ <div class="head"><div><h2>Hasil penilaian</h2><p>Contoh tampilan: <b>Alif Rahman — Total 69/100</b>.</p></div><button id="csv" class="btn success" disabled>Ekspor CSV</button></div>
+ <div class="stats"><div class="stat"><small>Lembar selesai</small><b id="done">0</b></div><div class="stat"><small>Perlu diperiksa</small><b id="need">0</b></div><div class="stat"><small>Total skor</small><b id="sum">0</b></div><div class="stat"><small>Rata-rata</small><b id="avg">0</b></div></div>
+ <div id="results"><div class="empty"><b>Belum ada hasil</b>Hasil nama dan total nilai akan muncul di sini.</div></div>
+</section>
+</main>
+<footer>Tidak menggunakan Gemini API, API key, Apps Script, atau kuota API. OCR dan penilaian berjalan di browser.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+const MAX_TOTAL=500, MAX_SELECT=10, BATCH=2;
+const DEFAULT=[
+ ["Pengertian Seni Rupa",["seni rupa","karya","visual","keindahan","ekspresi"]],
+ ["Prinsip Seni Rupa",["kesatuan","keseimbangan","penekanan","harmoni","proporsi","irama","kontras"]],
+ ["Unsur Seni Rupa",["titik","garis","bidang","bentuk","ruang","tekstur","warna","gelap terang"]],
+ ["Warna",["primer","sekunder","tersier","netral","merah","kuning","biru","hijau","jingga","ungu"]],
+ ["Seni Rupa Murni dan Terapan",["murni","terapan","fungsi","estetis","pakai","kriya","lukis","patung","desain"]]
 ];
+let queue=[], results=[], worker=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9\\s-]/g," ").replace(/\\s+/g," ").trim();
 
-const MAX_RETRY_PER_MODEL = 2;
-
-
-// ============================================================
-// HALAMAN WEB APP
-// ============================================================
-
-function doGet() {
-
-  return ContentService
-    .createTextOutput("AI Penilai aktif")
-    .setMimeType(ContentService.MimeType.TEXT);
-
+function drawRubric(){
+ let r; try{r=JSON.parse(localStorage.nilailRubric||"null")}catch{r=null} r=r||DEFAULT;
+ $("rubricgrid").innerHTML=r.map((x,i)=>`<div class="rub"><strong>Q${i+1} — ${esc(x[0])}</strong><textarea data-rub="${i}">${esc(x[1].join(", "))}</textarea></div>`).join("");
 }
-
-
-// ============================================================
-// PROSES UTAMA
-// ============================================================
-
-function doPost(e) {
-
-  try {
-
-    // --------------------------------------------------------
-    // API KEY
-    // --------------------------------------------------------
-
-    const apiKey =
-      PropertiesService
-        .getScriptProperties()
-        .getProperty("GEMINI_API_KEY");
-
-    if (!apiKey) {
-
-      throw new Error(
-        "GEMINI_API_KEY belum ditemukan."
-      );
-
-    }
-
-
-    // --------------------------------------------------------
-    // DATA DARI WEBSITE
-    // --------------------------------------------------------
-
-    if (!e || !e.postData || !e.postData.contents) {
-
-      throw new Error(
-        "Data dari website tidak ditemukan."
-      );
-
-    }
-
-
-    const body =
-      JSON.parse(
-        e.postData.contents
-      );
-
-
-    const imageBase64 =
-      body.image;
-
-    const mimeType =
-      body.mimeType ||
-      "image/jpeg";
-
-
-    if (!imageBase64) {
-
-      throw new Error(
-        "Foto lembar jawaban tidak ditemukan."
-      );
-
-    }
-
-
-    // --------------------------------------------------------
-    // PROMPT PENILAIAN
-    // --------------------------------------------------------
-
-    const prompt = `
-Anda adalah sistem AI untuk membaca dan menilai
-lembar jawaban ujian Seni Budaya SMA.
-
-Tugas utama Anda:
-
-1. Membaca seluruh tulisan pada foto.
-2. Membaca NAMA SISWA yang tertulis pada lembar.
-3. Membaca jawaban siswa untuk soal nomor 1 sampai 5.
-4. Menilai setiap jawaban berdasarkan makna dan ketepatan.
-5. Menghasilkan nilai setiap soal.
-6. Menghasilkan total nilai.
-
-============================================================
-NAMA SISWA
-============================================================
-
-Cari nama siswa yang tertulis pada lembar jawaban.
-
-Baca nama dengan teliti.
-
-Tuliskan nama sesuai tulisan yang terlihat.
-
-Jika nama benar-benar tidak terbaca, tuliskan:
-
-"Nama tidak terbaca"
-
-Jangan mengarang nama.
-
-============================================================
-SOAL
-============================================================
-
-Q1.
-Jelaskan pengertian seni rupa.
-
-Q2.
-Sebutkan dan jelaskan prinsip-prinsip seni rupa.
-
-Q3.
-Sebutkan unsur-unsur seni rupa.
-
-Q4.
-Jelaskan jenis-jenis warna.
-
-Q5.
-Jelaskan perbedaan seni rupa murni dan seni rupa terapan,
-termasuk fungsi dan contohnya.
-
-============================================================
-ATURAN PENILAIAN
-============================================================
-
-Setiap soal bernilai maksimal 20.
-
-Total maksimal 100.
-
-Nilai harus berdasarkan kesesuaian jawaban
-dengan pertanyaan.
-
-Jawaban siswa tidak harus menggunakan kalimat
-yang sama dengan contoh jawaban.
-
-Jika maknanya benar, tetap beri nilai.
-
-Jika jawaban sebagian benar,
-berikan nilai sebagian.
-
-Jika jawaban panjang tetapi isinya tidak sesuai,
-jangan memberikan nilai tinggi.
-
-Jangan memberikan nilai hanya berdasarkan panjang jawaban.
-
-Jangan mengarang jawaban yang tidak terlihat.
-
-Jika tulisan tidak terbaca atau sangat meragukan,
-confidence harus rendah.
-
-Perhatikan tulisan tangan dengan teliti.
-
-============================================================
-OUTPUT
-============================================================
-
-Keluarkan JSON SAJA.
-
-Jangan menggunakan Markdown.
-
-Jangan menggunakan tanda \`\`\`.
-
-Format:
-
-{
-  "studentName": "Nama siswa",
-  "answers": [
-    {
-      "question": 1,
-      "answer": "ringkasan jawaban siswa",
-      "score": 0,
-      "confidence": 0.0,
-      "note": "alasan pemberian nilai"
-    },
-    {
-      "question": 2,
-      "answer": "ringkasan jawaban siswa",
-      "score": 0,
-      "confidence": 0.0,
-      "note": "alasan pemberian nilai"
-    },
-    {
-      "question": 3,
-      "answer": "ringkasan jawaban siswa",
-      "score": 0,
-      "confidence": 0.0,
-      "note": "alasan pemberian nilai"
-    },
-    {
-      "question": 4,
-      "answer": "ringkasan jawaban siswa",
-      "score": 0,
-      "confidence": 0.0,
-      "note": "alasan pemberian nilai"
-    },
-    {
-      "question": 5,
-      "answer": "ringkasan jawaban siswa",
-      "score": 0,
-      "confidence": 0.0,
-      "note": "alasan pemberian nilai"
-    }
-  ],
-  "total": 0,
-  "status": "OK"
+function readRubric(){
+ const r=[...document.querySelectorAll("[data-rub]")].map((e,i)=>[DEFAULT[i][0],e.value.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean)]);
+ localStorage.nilailRubric=JSON.stringify(r); return r;
 }
-
-Pastikan score setiap soal antara 0 sampai 20.
-
-Pastikan total adalah jumlah nilai Q1 sampai Q5.
-
-Jika terdapat jawaban yang tidak terbaca,
-jangan mengarang.
-`;
-
-
-    // --------------------------------------------------------
-    // PAYLOAD GEMINI
-    // --------------------------------------------------------
-
-    const payload = {
-
-      contents: [
-
-        {
-
-          parts: [
-
-            {
-              text: prompt
-            },
-
-            {
-              inlineData: {
-
-                mimeType:
-                  mimeType,
-
-                data:
-                  imageBase64
-
-              }
-
-            }
-
-          ]
-
-        }
-
-      ],
-
-      generationConfig: {
-
-        responseMimeType:
-          "application/json",
-
-        temperature:
-          0.1,
-
-        maxOutputTokens:
-          2500
-
-      }
-
-    };
-
-
-    // --------------------------------------------------------
-    // COBA MODEL
-    // --------------------------------------------------------
-
-    let apiResult = null;
-
-    let lastError =
-      "Tidak ada respons dari Gemini.";
-
-
-    for (
-      let m = 0;
-      m < MODELS.length;
-      m++
-    ) {
-
-      const model =
-        MODELS[m];
-
-
-      const url =
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        + model
-        + ":generateContent";
-
-
-      for (
-        let attempt = 1;
-        attempt <= MAX_RETRY_PER_MODEL;
-        attempt++
-      ) {
-
-        try {
-
-          const response =
-            UrlFetchApp.fetch(
-
-              url,
-
-              {
-
-                method:
-                  "post",
-
-                contentType:
-                  "application/json",
-
-                headers: {
-
-                  "x-goog-api-key":
-                    apiKey
-
-                },
-
-                payload:
-                  JSON.stringify(payload),
-
-                muteHttpExceptions:
-                  true
-
-              }
-
-            );
-
-
-          const statusCode =
-            response.getResponseCode();
-
-
-          const rawResponse =
-            response.getContentText();
-
-
-          // --------------------------------------------------
-          // BERHASIL
-          // --------------------------------------------------
-
-          if (
-            statusCode >= 200 &&
-            statusCode < 300
-          ) {
-
-            apiResult =
-              JSON.parse(
-                rawResponse
-              );
-
-            break;
-
-          }
-
-
-          // --------------------------------------------------
-          // ERROR
-          // --------------------------------------------------
-
-          lastError =
-            "Model "
-            + model
-            + " error "
-            + statusCode
-            + ": "
-            + rawResponse;
-
-
-          // --------------------------------------------------
-          // ERROR SEMENTARA
-          // --------------------------------------------------
-
-          const temporaryError =
-            statusCode === 408 ||
-            statusCode === 429 ||
-            statusCode >= 500;
-
-
-          if (!temporaryError) {
-
-            break;
-
-          }
-
-
-          // Jangan menunggu terlalu lama.
-          if (
-            attempt <
-            MAX_RETRY_PER_MODEL
-          ) {
-
-            Utilities.sleep(
-              1000
-            );
-
-          }
-
-        } catch (error) {
-
-          lastError =
-            "Model "
-            + model
-            + ": "
-            + String(
-              error.message ||
-              error
-            );
-
-          if (
-            attempt <
-            MAX_RETRY_PER_MODEL
-          ) {
-
-            Utilities.sleep(
-              1000
-            );
-
-          }
-
-        }
-
-      }
-
-
-      if (apiResult) {
-
-        break;
-
-      }
-
-    }
-
-
-    // --------------------------------------------------------
-    // SEMUA MODEL GAGAL
-    // --------------------------------------------------------
-
-    if (!apiResult) {
-
-      throw new Error(
-        "Gemini sedang sibuk atau tidak tersedia. Silakan coba lagi. Detail: "
-        + lastError
-      );
-
-    }
-
-
-    // --------------------------------------------------------
-    // CEK RESPONSE
-    // --------------------------------------------------------
-
-    if (
-      !apiResult.candidates ||
-      !apiResult.candidates.length
-    ) {
-
-      throw new Error(
-        "Gemini tidak memberikan hasil penilaian."
-      );
-
-    }
-
-
-    const candidate =
-      apiResult.candidates[0];
-
-
-    if (
-      !candidate.content ||
-      !candidate.content.parts ||
-      !candidate.content.parts.length
-    ) {
-
-      throw new Error(
-        "Hasil dari Gemini kosong."
-      );
-
-    }
-
-
-    const resultText =
-      candidate.content.parts
-        .map(function(part) {
-
-          return part.text || "";
-
-        })
-        .join("");
-
-
-    if (!resultText) {
-
-      throw new Error(
-        "Gemini tidak mengembalikan teks."
-      );
-
-    }
-
-
-    // --------------------------------------------------------
-    // PARSE JSON
-    // --------------------------------------------------------
-
-    const grading =
-      parseGeminiJson(
-        resultText
-      );
-
-
-    // --------------------------------------------------------
-    // VALIDASI NAMA
-    // --------------------------------------------------------
-
-    if (
-      !grading.studentName ||
-      String(
-        grading.studentName
-      ).trim() === ""
-    ) {
-
-      grading.studentName =
-        "Nama tidak terbaca";
-
-    }
-
-
-    grading.studentName =
-      String(
-        grading.studentName
-      ).trim();
-
-
-    // --------------------------------------------------------
-    // VALIDASI JAWABAN
-    // --------------------------------------------------------
-
-    if (
-      !Array.isArray(
-        grading.answers
-      )
-    ) {
-
-      grading.answers = [];
-
-    }
-
-
-    let total = 0;
-
-    let perluPeriksa =
-      false;
-
-
-    // Pastikan selalu ada Q1-Q5
-    const fixedAnswers = [];
-
-
-    for (
-      let q = 1;
-      q <= 5;
-      q++
-    ) {
-
-      let answer =
-        grading.answers.find(
-          function(item) {
-
-            return Number(
-              item.question
-            ) === q;
-
-          }
-        );
-
-
-      if (!answer) {
-
-        answer = {
-
-          question: q,
-
-          answer:
-            "Jawaban tidak terbaca.",
-
-          score: 0,
-
-          confidence:
-            0,
-
-          note:
-            "Jawaban tidak ditemukan."
-
-        };
-
-      }
-
-
-      // Nilai
-      let score =
-        Number(
-          answer.score
-        );
-
-
-      if (
-        isNaN(score)
-      ) {
-
-        score = 0;
-
-      }
-
-
-      score =
-        Math.max(
-          0,
-          Math.min(
-            20,
-            Math.round(
-              score
-            )
-          )
-        );
-
-
-      answer.score =
-        score;
-
-
-      // Confidence
-      let confidence =
-        Number(
-          answer.confidence
-        );
-
-
-      if (
-        isNaN(confidence)
-      ) {
-
-        confidence = 0;
-
-      }
-
-
-      confidence =
-        Math.max(
-          0,
-          Math.min(
-            1,
-            confidence
-          )
-        );
-
-
-      answer.confidence =
-        confidence;
-
-
-      // Data teks
-      answer.answer =
-        String(
-          answer.answer ||
-          ""
-        );
-
-
-      answer.note =
-        String(
-          answer.note ||
-          ""
-        );
-
-
-      total +=
-        score;
-
-
-      if (
-        confidence < 0.75
-      ) {
-
-        perluPeriksa =
-          true;
-
-      }
-
-
-      fixedAnswers.push(
-        answer
-      );
-
-    }
-
-
-    // --------------------------------------------------------
-    // HASIL AKHIR
-    // --------------------------------------------------------
-
-    grading.answers =
-      fixedAnswers;
-
-    grading.total =
-      total;
-
-    grading.status =
-      perluPeriksa
-        ? "PERIKSA"
-        : "OK";
-
-
-    // --------------------------------------------------------
-    // KIRIM KE WEBSITE
-    // --------------------------------------------------------
-
-    return ContentService
-      .createTextOutput(
-        JSON.stringify({
-
-          success:
-            true,
-
-          result:
-            grading
-
-        })
-      )
-      .setMimeType(
-        ContentService.MimeType.JSON
-      );
-
-
-  } catch (error) {
-
-
-    // --------------------------------------------------------
-    // ERROR TERKENDALI
-    // --------------------------------------------------------
-
-    return ContentService
-      .createTextOutput(
-        JSON.stringify({
-
-          success:
-            false,
-
-          error:
-            String(
-              error.message ||
-              error
-            )
-
-        })
-      )
-      .setMimeType(
-        ContentService.MimeType.JSON
-      );
-
-  }
-
+drawRubric();
+$("reset").onclick=()=>{localStorage.removeItem("nilailRubric");drawRubric()};
+
+$("picker").onchange=e=>{
+ const incoming=[...e.target.files];
+ if(incoming.length>MAX_SELECT){alert("Maksimal 10 lembar untuk sekali unggah.");}
+ const allowed=incoming.slice(0,MAX_SELECT);
+ if(queue.length+allowed.length>MAX_TOTAL){alert("Maksimal 500 lembar dalam satu sesi.");return}
+ queue.push(...allowed); e.target.value=""; drawFiles();
+};
+function drawFiles(){
+ $("counter").textContent=`${queue.length} lembar dipilih`;
+ $("start").disabled=!queue.length;
+ $("clear").disabled=!queue.length;
+ $("filegrid").innerHTML=queue.map((f,i)=>`<div class="file"><img class="thumb" src="${URL.createObjectURL(f)}" onload="URL.revokeObjectURL(this.src)"><div style="min-width:0"><div class="fname">${i+1}. ${esc(f.name)}</div><div class="fstate">${Math.round(f.size/1024)} KB</div></div></div>`).join("");
 }
+$("clear").onclick=()=>{queue=[];results=[];drawFiles();drawResults()};
 
-
-// ============================================================
-// PARSER JSON GEMINI
-// ============================================================
-
-function parseGeminiJson(text) {
-
-  let cleaned =
-    String(text)
-      .trim();
-
-
-  // Hapus markdown jika model tetap memberikannya
-  cleaned =
-    cleaned
-      .replace(
-        /^```json\s*/i,
-        ""
-      )
-      .replace(
-        /^```\s*/i,
-        ""
-      )
-      .replace(
-        /\s*```$/i,
-        ""
-      )
-      .trim();
-
-
-  // Percobaan pertama
-  try {
-
-    return JSON.parse(
-      cleaned
-    );
-
-  } catch (e) {
-
-    // Lanjut mencari object JSON
-  }
-
-
-  // Cari {...}
-  const start =
-    cleaned.indexOf("{");
-
-  const end =
-    cleaned.lastIndexOf("}");
-
-
-  if (
-    start >= 0 &&
-    end > start
-  ) {
-
-    const jsonText =
-      cleaned.substring(
-        start,
-        end + 1
-      );
-
-
-    try {
-
-      return JSON.parse(
-        jsonText
-      );
-
-    } catch (e) {
-
-      throw new Error(
-        "Format hasil Gemini tidak valid."
-      );
-
-    }
-
-  }
-
-
-  throw new Error(
-    "Gemini tidak menghasilkan JSON yang dapat dibaca."
-  );
-
+function getWorker(){
+ if(worker)return worker;
+ return Tesseract.createWorker("eng",1,{logger:m=>{
+   if(m.status) $("detail").textContent=`OCR: ${m.status}${m.progress?` • ${Math.round(m.progress*100)}%`:""}`;
+ }}).then(w=>(worker=w));
 }
-
-
-// ============================================================
-// TES GEMINI TEKS
-// ============================================================
-
-function testGemini() {
-
-  const apiKey =
-    PropertiesService
-      .getScriptProperties()
-      .getProperty("GEMINI_API_KEY");
-
-
-  if (!apiKey) {
-
-    throw new Error(
-      "GEMINI_API_KEY belum ditemukan."
-    );
-
-  }
-
-
-  const model =
-    "gemini-3.8-flash";
-
-
-  const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-    + model
-    + ":generateContent";
-
-
-  const payload = {
-
-    contents: [
-
-      {
-
-        parts: [
-
-          {
-            text:
-              "Jawab singkat: berapa 2 + 2?"
-          }
-
-        ]
-
-      }
-
-    ]
-
-  };
-
-
-  const response =
-    UrlFetchApp.fetch(
-
-      url,
-
-      {
-
-        method:
-          "post",
-
-        contentType:
-          "application/json",
-
-        headers: {
-
-          "x-goog-api-key":
-            apiKey
-
-        },
-
-        payload:
-          JSON.stringify(payload),
-
-        muteHttpExceptions:
-          true
-
-      }
-
-    );
-
-
-  Logger.log(
-    "STATUS: "
-    + response.getResponseCode()
-  );
-
-
-  Logger.log(
-    response.getContentText()
-  );
-
+async function preprocess(file){
+ const img=new Image(), url=URL.createObjectURL(file);
+ await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src=url});
+ const max=2200, scale=Math.min(1,max/Math.max(img.width,img.height));
+ const c=document.createElement("canvas"); c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));
+ const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+ return new Promise(ok=>c.toBlob(ok,"image/jpeg",.9));
 }
-
-
-// ============================================================
-// TES GEMINI GAMBAR
-// ============================================================
-
-function testGeminiImage() {
-
-  const apiKey =
-    PropertiesService
-      .getScriptProperties()
-      .getProperty("GEMINI_API_KEY");
-
-
-  if (!apiKey) {
-
-    throw new Error(
-      "GEMINI_API_KEY belum ditemukan."
-    );
-
-  }
-
-
-  const model =
-    "gemini-3.8-flash";
-
-
-  const imageBase64 =
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
-
-
-  const payload = {
-
-    contents: [
-
-      {
-
-        parts: [
-
-          {
-
-            text:
-              "Apakah kamu menerima gambar ini? Jawab hanya: GAMBAR DITERIMA"
-
-          },
-
-          {
-
-            inlineData: {
-
-              mimeType:
-                "image/png",
-
-              data:
-                imageBase64
-
-            }
-
-          }
-
-        ]
-
-      }
-
-    ]
-
-  };
-
-
-  const url =
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-    + model
-    + ":generateContent";
-
-
-  const response =
-    UrlFetchApp.fetch(
-
-      url,
-
-      {
-
-        method:
-          "post",
-
-        contentType:
-          "application/json",
-
-        headers: {
-
-          "x-goog-api-key":
-            apiKey
-
-        },
-
-        payload:
-          JSON.stringify(payload),
-
-        muteHttpExceptions:
-          true
-
-      }
-
-    );
-
-
-  Logger.log(
-    "STATUS: "
-    + response.getResponseCode()
-  );
-
-
-  Logger.log(
-    response.getContentText()
-  );
-
+function extractName(text,file){
+ const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ for(const l of lines.slice(0,20)){if(/nama\\s*[:\\-]/i.test(l)){const n=l.replace(/.*nama\\s*[:\\-]?\\s*/i,"").trim();if(n.length>=2)return n}}
+ return file.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").trim()||"Nama tidak terbaca";
 }
+function splitAnswers(text){
+ const m=[...text.matchAll(/(?:^|\\n)\\s*(?:soal\\s*)?([1-5])\\s*[\\.\\):\\-]\\s*/gi)];
+ if(m.length>=2){const o=Array(5).fill("");for(let i=0;i<m.length;i++){const q=+m[i][1],a=m[i].index+m[i][0].length,b=i+1<m.length?m[i+1].index:text.length;if(q>=1&&q<=5)o[q-1]=text.slice(a,b).trim()}return o}
+ const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean),o=Array.from({length:5},()=>[]);
+ lines.forEach((l,i)=>o[Math.min(4,Math.floor(i/Math.max(1,Math.ceil(lines.length/5))))].push(l));
+ return o.map(x=>x.join(" "));
+}
+function grade(answer,r){
+ const n=norm(answer); if(!n)return {score:0,confidence:.2,note:"Jawaban tidak terbaca."};
+ const hits=[...new Set(r[1].filter(k=>n.includes(norm(k))))];
+ let score=Math.min(20,Math.round(hits.length/Math.max(1,Math.min(5,r[1].length))*20));
+ if(hits.length&&n.split(" ").length>=12)score=Math.min(20,score+2);
+ const confidence=Math.min(.96,.42+hits.length*.10+(n.length>45?.12:0));
+ return {score,confidence,note:hits.length?`Ditemukan ${hits.length} kata/frasa kunci.`:"Kata kunci acuan belum ditemukan."};
+}
+async function processOne(file,rubric){
+ const blob=await preprocess(file), w=await getWorker(), out=await w.recognize(blob), text=out.data.text||"";
+ const aa=splitAnswers(text), answers=aa.map((a,i)=>{const g=grade(a,rubric[i]);return{q:i+1,text:a,score:g.score,confidence:g.confidence,note:g.note}});
+ return {name:extractName(text,file),file:file.name,total:answers.reduce((s,a)=>s+a.score,0),status:answers.some(a=>a.confidence<.62)?"PERIKSA":"OK",answers};
+}
+$("start").onclick=async()=>{
+ const rubric=readRubric(); $("start").disabled=true;$("clear").disabled=true;$("progressbox").classList.remove("hidden");$("msg").textContent="";
+ try{
+   for(let i=0;i<queue.length;i+=BATCH){
+     const batch=queue.slice(i,i+BATCH);
+     for(let j=0;j<batch.length;j++){
+       const index=i+j; $("progtxt").textContent=`Menilai ${index+1} dari ${queue.length}`;
+       $("pct").textContent=`${Math.round(index/queue.length*100)}%`; $("bar").style.width=`${Math.round(index/queue.length*100)}%`;
+       try{results.push(await processOne(batch[j],rubric))}
+       catch(err){results.push({name:"Tidak terbaca",file:batch[j].name,total:0,status:"PERIKSA",answers:[1,2,3,4,5].map(q=>({q,text:"",score:0,confidence:0,note:"Lembar gagal dibaca; periksa manual."}))});}
+       drawResults();
+     }
+     await new Promise(r=>setTimeout(r,20));
+   }
+   $("bar").style.width="100%";$("pct").textContent="100%";$("progtxt").textContent="Selesai";$("msg").className="msg ok";$("msg").textContent=`Selesai memproses ${results.length} lembar.`;
+ }finally{$("start").disabled=false;$("clear").disabled=false;$("csv").disabled=!results.length}
+};
+function drawResults(){
+ const total=results.reduce((s,r)=>s+r.total,0);$("done").textContent=results.length;$("need").textContent=results.filter(r=>r.status==="PERIKSA").length;$("sum").textContent=total;$("avg").textContent=results.length?(total/results.length).toFixed(1):"0";
+ $("results").innerHTML=results.length?results.map(r=>`<article class="result"><div class="rhead"><div><div class="rname">${esc(r.name)}</div><div class="rfile">${esc(r.file)}</div></div><div><div class="rtotal">${r.total}/100</div><div class="rstatus ${r.status==="OK"?"ok":"warn"}">${r.status}</div></div></div><div class="answers">${r.answers.map(a=>`<div class="answer"><div class="q">Q${a.q}</div><div><div class="atext">${esc(a.text||"—")}</div><div class="anote">${esc(a.note)}</div></div><div class="ascore">${a.score}/20</div></div>`).join("")}</div></article>`).join(""):'<div class="empty"><b>Belum ada hasil</b>Hasil nama dan total nilai akan muncul di sini.</div>';
+}
+$("csv").onclick=()=>{
+ const rows=[["No","Nama","File","Q1","Q2","Q3","Q4","Q5","Total","Status"],...results.map((r,i)=>[i+1,r.name,r.file,...r.answers.map(a=>a.score),r.total,r.status])];
+ const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n"),b=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="hasil-penilaian.csv";a.click();
+};
+drawFiles();drawResults();
+</script>
+</body>
+</html>
