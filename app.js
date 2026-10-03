@@ -137,6 +137,45 @@ async function sendToGemini(file) {
     );
   }
 
+  setMsg("Mengoptimalkan foto...");
+
+  const compressedFile = await compressImage(file);
+
+  setMsg("Mengirim foto ke AI Gemini...");
+
+  const base64 = await fileToBase64(compressedFile);
+
+  const response = await fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify({
+      image: base64,
+      mimeType: "image/jpeg"
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Server gagal (${response.status})`
+    );
+  }
+
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(
+      data.error ||
+      "AI gagal memproses lembar jawaban."
+    );
+  }
+
+  return data.result;
+}
+
+  
+
   setMsg("Mengirim foto ke AI Gemini...");
 
   const base64 = await fileToBase64(file);
@@ -190,16 +229,106 @@ function fileToBase64(file) {
     const reader = new FileReader();
 
     reader.onload = () => {
-
       const result = reader.result;
-
-      const base64 =
-        String(result).split(",")[1];
-
+      const base64 = String(result).split(",")[1];
       resolve(base64);
-
     };
 
+    reader.onerror = () => {
+      reject(new Error("Foto gagal dibaca."));
+    };
+
+    reader.readAsDataURL(file);
+  });
+};
+
+async function compressImage(file) {
+
+  return new Promise((resolve, reject) => {
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+
+      URL.revokeObjectURL(url);
+
+      const MAX_SIZE = 2200;
+
+      let width = img.width;
+      let height = img.height;
+
+      if (width > MAX_SIZE || height > MAX_SIZE) {
+
+        if (width > height) {
+          height = Math.round(
+            height * MAX_SIZE / width
+          );
+          width = MAX_SIZE;
+        } else {
+          width = Math.round(
+            width * MAX_SIZE / height
+          );
+          height = MAX_SIZE;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        width,
+        height
+      );
+
+      canvas.toBlob(
+        (blob) => {
+
+          if (!blob) {
+            reject(
+              new Error("Foto gagal dikompres.")
+            );
+            return;
+          }
+
+          const compressedFile = new File(
+            [blob],
+            "lembar-jawaban.jpg",
+            {
+              type: "image/jpeg",
+              lastModified: Date.now()
+            }
+          );
+
+          resolve(compressedFile);
+        },
+        "image/jpeg",
+        0.88
+      );
+    };
+
+    img.onerror = () => {
+
+      URL.revokeObjectURL(url);
+
+      reject(
+        new Error("Foto tidak dapat diproses.")
+      );
+    };
+
+    img.src = url;
+  });
+}
     reader.onerror = () => {
 
       reject(
