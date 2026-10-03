@@ -1,31 +1,38 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Nilai Lembar V7</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Nilai Lembar — V8 PaddleOCR</title>
+  <link rel="stylesheet" href="style.css?v=8.0.0">
 </head>
 <body>
-<main class="wrap">
-  <header><span>V7 • TES OCR</span><h1>Nilai Lembar</h1><p>Uji pembacaan tulisan tangan dari 1 foto.</p></header>
-  <section class="card">
-    <h2>1. Pilih foto</h2>
-    <input id="file" type="file" accept="image/*">
-    <img id="preview" class="preview hidden" alt="Pratinjau">
-  </section>
-  <section class="card">
-    <h2>2. Baca tulisan</h2>
-    <p>Versi ini belum menghitung nilai. Kita cek OCR-nya dulu.</p>
-    <button id="run" disabled>Mulai Membaca</button>
-    <div class="progress"><div id="bar"></div></div>
-    <div id="status">Pilih 1 foto.</div>
-  </section>
-  <section class="card">
-    <h2>Hasil OCR</h2>
-    <pre id="out">Belum ada hasil.</pre>
-  </section>
-</main>
-<script type="module" src="app.js?v=7.1.0"></script>
+  <main class="app">
+    <header>
+      <div class="badge">V8 • TES OCR</div>
+      <h1>Nilai Lembar</h1>
+      <p>Uji baca tulisan langsung di browser — tanpa API key.</p>
+    </header>
+
+    <section class="card">
+      <h2>1. Pilih 1 foto lembar jawaban</h2>
+      <input id="file" type="file" accept="image/*">
+      <img id="preview" alt="Pratinjau lembar jawaban">
+      <button id="start" disabled>Mulai Tes OCR</button>
+      <div id="status" class="status">Belum ada foto.</div>
+    </section>
+
+    <section class="card">
+      <h2>2. Hasil OCR</h2>
+      <div id="summary" class="summary">Belum diproses.</div>
+      <pre id="output">—</pre>
+    </section>
+
+    <section class="card note">
+      <b>Catatan tes:</b>
+      versi ini hanya menguji kemampuan membaca foto. Belum ada penilaian nilai, agar kita tidak memasukkan nilai yang salah ketika tulisan belum terbaca dengan baik.
+    </section>
+  </main>
+  <script type="module" src="app.js?v=8.0.0"></script>
 </body>
 </html>
