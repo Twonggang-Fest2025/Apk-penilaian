@@ -1,146 +1,1085 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
+// ============================================================
+// AI PENILAI LEMBAR JAWABAN SENI BUDAYA
+// ============================================================
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+const MODELS = [
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
+  "gemini-3.6-flash"
+];
 
-  <title>AI Penilai Lembar Jawaban</title>
-
-  <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-  <header class="header">
-    <div class="container">
-      <h1>🤖 AI Penilai Lembar Jawaban</h1>
-      <p>Penilaian otomatis lembar jawaban Seni Budaya</p>
-    </div>
-  </header>
+const MAX_RETRY_PER_MODEL = 2;
 
 
-  <main class="container">
+// ============================================================
+// HALAMAN WEB APP
+// ============================================================
 
-    <!-- FOTO DARI KAMERA -->
-    <section class="card">
+function doGet() {
 
-      <h2>1. Foto dari Kamera</h2>
+  return ContentService
+    .createTextOutput("AI Penilai aktif")
+    .setMimeType(ContentService.MimeType.TEXT);
 
-      <p class="meta">
-        Gunakan kamera untuk memotret lembar jawaban.
-      </p>
-
-      <input
-        type="file"
-        id="camera"
-        accept="image/*"
-        capture="environment"
-      >
-
-    </section>
+}
 
 
-    <!-- UPLOAD FOTO -->
-    <section class="card">
+// ============================================================
+// PROSES UTAMA
+// ============================================================
 
-      <h2>2. Upload Lembar Jawaban</h2>
+function doPost(e) {
 
-      <p class="meta">
-        Pilih hingga 10 foto sekaligus.
-      </p>
+  try {
 
-      <input
-        type="file"
-        id="photo"
-        accept="image/*"
-        multiple
-      >
+    // --------------------------------------------------------
+    // API KEY
+    // --------------------------------------------------------
 
-      <div id="fileList" class="file-list"></div>
+    const apiKey =
+      PropertiesService
+        .getScriptProperties()
+        .getProperty("GEMINI_API_KEY");
 
-    </section>
+    if (!apiKey) {
 
+      throw new Error(
+        "GEMINI_API_KEY belum ditemukan."
+      );
 
-    <!-- PROSES -->
-    <section class="card">
-
-      <h2>3. Penilaian AI</h2>
-
-      <button
-        id="process"
-        type="button"
-      >
-        🤖 PERIKSA DENGAN AI
-      </button>
-
-      <div
-        id="progressBox"
-        class="progress-box"
-        style="display:none;"
-      >
-
-        <div id="progressText" class="meta">
-          Menyiapkan penilaian...
-        </div>
-
-        <div class="progress-container">
-
-          <div
-            id="progressBar"
-            class="progress-bar"
-            style="width:0%;"
-          ></div>
-
-        </div>
-
-      </div>
-
-      <div id="msg" class="meta">
-        Belum ada foto yang diproses.
-      </div>
-
-    </section>
+    }
 
 
-    <!-- HASIL -->
-    <section class="card">
+    // --------------------------------------------------------
+    // DATA DARI WEBSITE
+    // --------------------------------------------------------
 
-      <h2>4. Hasil Penilaian</h2>
+    if (!e || !e.postData || !e.postData.contents) {
 
-      <div id="answers"></div>
+      throw new Error(
+        "Data dari website tidak ditemukan."
+      );
 
-    </section>
-
-
-    <!-- EXPORT -->
-    <section class="card">
-
-      <h2>5. Export Hasil</h2>
-
-      <button
-        id="csv"
-        type="button"
-      >
-        📥 DOWNLOAD HASIL CSV
-      </button>
-
-    </section>
-
-  </main>
+    }
 
 
-  <footer class="footer">
+    const body =
+      JSON.parse(
+        e.postData.contents
+      );
 
-    <p>AI Penilai Lembar Jawaban</p>
 
-  </footer>
+    const imageBase64 =
+      body.image;
+
+    const mimeType =
+      body.mimeType ||
+      "image/jpeg";
 
 
-  <script src="app.js"></script>
+    if (!imageBase64) {
 
-</body>
-</html>
+      throw new Error(
+        "Foto lembar jawaban tidak ditemukan."
+      );
+
+    }
+
+
+    // --------------------------------------------------------
+    // PROMPT PENILAIAN
+    // --------------------------------------------------------
+
+    const prompt = `
+Anda adalah sistem AI untuk membaca dan menilai
+lembar jawaban ujian Seni Budaya SMA.
+
+Tugas utama Anda:
+
+1. Membaca seluruh tulisan pada foto.
+2. Membaca NAMA SISWA yang tertulis pada lembar.
+3. Membaca jawaban siswa untuk soal nomor 1 sampai 5.
+4. Menilai setiap jawaban berdasarkan makna dan ketepatan.
+5. Menghasilkan nilai setiap soal.
+6. Menghasilkan total nilai.
+
+============================================================
+NAMA SISWA
+============================================================
+
+Cari nama siswa yang tertulis pada lembar jawaban.
+
+Baca nama dengan teliti.
+
+Tuliskan nama sesuai tulisan yang terlihat.
+
+Jika nama benar-benar tidak terbaca, tuliskan:
+
+"Nama tidak terbaca"
+
+Jangan mengarang nama.
+
+============================================================
+SOAL
+============================================================
+
+Q1.
+Jelaskan pengertian seni rupa.
+
+Q2.
+Sebutkan dan jelaskan prinsip-prinsip seni rupa.
+
+Q3.
+Sebutkan unsur-unsur seni rupa.
+
+Q4.
+Jelaskan jenis-jenis warna.
+
+Q5.
+Jelaskan perbedaan seni rupa murni dan seni rupa terapan,
+termasuk fungsi dan contohnya.
+
+============================================================
+ATURAN PENILAIAN
+============================================================
+
+Setiap soal bernilai maksimal 20.
+
+Total maksimal 100.
+
+Nilai harus berdasarkan kesesuaian jawaban
+dengan pertanyaan.
+
+Jawaban siswa tidak harus menggunakan kalimat
+yang sama dengan contoh jawaban.
+
+Jika maknanya benar, tetap beri nilai.
+
+Jika jawaban sebagian benar,
+berikan nilai sebagian.
+
+Jika jawaban panjang tetapi isinya tidak sesuai,
+jangan memberikan nilai tinggi.
+
+Jangan memberikan nilai hanya berdasarkan panjang jawaban.
+
+Jangan mengarang jawaban yang tidak terlihat.
+
+Jika tulisan tidak terbaca atau sangat meragukan,
+confidence harus rendah.
+
+Perhatikan tulisan tangan dengan teliti.
+
+============================================================
+OUTPUT
+============================================================
+
+Keluarkan JSON SAJA.
+
+Jangan menggunakan Markdown.
+
+Jangan menggunakan tanda \`\`\`.
+
+Format:
+
+{
+  "studentName": "Nama siswa",
+  "answers": [
+    {
+      "question": 1,
+      "answer": "ringkasan jawaban siswa",
+      "score": 0,
+      "confidence": 0.0,
+      "note": "alasan pemberian nilai"
+    },
+    {
+      "question": 2,
+      "answer": "ringkasan jawaban siswa",
+      "score": 0,
+      "confidence": 0.0,
+      "note": "alasan pemberian nilai"
+    },
+    {
+      "question": 3,
+      "answer": "ringkasan jawaban siswa",
+      "score": 0,
+      "confidence": 0.0,
+      "note": "alasan pemberian nilai"
+    },
+    {
+      "question": 4,
+      "answer": "ringkasan jawaban siswa",
+      "score": 0,
+      "confidence": 0.0,
+      "note": "alasan pemberian nilai"
+    },
+    {
+      "question": 5,
+      "answer": "ringkasan jawaban siswa",
+      "score": 0,
+      "confidence": 0.0,
+      "note": "alasan pemberian nilai"
+    }
+  ],
+  "total": 0,
+  "status": "OK"
+}
+
+Pastikan score setiap soal antara 0 sampai 20.
+
+Pastikan total adalah jumlah nilai Q1 sampai Q5.
+
+Jika terdapat jawaban yang tidak terbaca,
+jangan mengarang.
+`;
+
+
+    // --------------------------------------------------------
+    // PAYLOAD GEMINI
+    // --------------------------------------------------------
+
+    const payload = {
+
+      contents: [
+
+        {
+
+          parts: [
+
+            {
+              text: prompt
+            },
+
+            {
+              inlineData: {
+
+                mimeType:
+                  mimeType,
+
+                data:
+                  imageBase64
+
+              }
+
+            }
+
+          ]
+
+        }
+
+      ],
+
+      generationConfig: {
+
+        responseMimeType:
+          "application/json",
+
+        temperature:
+          0.1,
+
+        maxOutputTokens:
+          2500
+
+      }
+
+    };
+
+
+    // --------------------------------------------------------
+    // COBA MODEL
+    // --------------------------------------------------------
+
+    let apiResult = null;
+
+    let lastError =
+      "Tidak ada respons dari Gemini.";
+
+
+    for (
+      let m = 0;
+      m < MODELS.length;
+      m++
+    ) {
+
+      const model =
+        MODELS[m];
+
+
+      const url =
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        + model
+        + ":generateContent";
+
+
+      for (
+        let attempt = 1;
+        attempt <= MAX_RETRY_PER_MODEL;
+        attempt++
+      ) {
+
+        try {
+
+          const response =
+            UrlFetchApp.fetch(
+
+              url,
+
+              {
+
+                method:
+                  "post",
+
+                contentType:
+                  "application/json",
+
+                headers: {
+
+                  "x-goog-api-key":
+                    apiKey
+
+                },
+
+                payload:
+                  JSON.stringify(payload),
+
+                muteHttpExceptions:
+                  true
+
+              }
+
+            );
+
+
+          const statusCode =
+            response.getResponseCode();
+
+
+          const rawResponse =
+            response.getContentText();
+
+
+          // --------------------------------------------------
+          // BERHASIL
+          // --------------------------------------------------
+
+          if (
+            statusCode >= 200 &&
+            statusCode < 300
+          ) {
+
+            apiResult =
+              JSON.parse(
+                rawResponse
+              );
+
+            break;
+
+          }
+
+
+          // --------------------------------------------------
+          // ERROR
+          // --------------------------------------------------
+
+          lastError =
+            "Model "
+            + model
+            + " error "
+            + statusCode
+            + ": "
+            + rawResponse;
+
+
+          // --------------------------------------------------
+          // ERROR SEMENTARA
+          // --------------------------------------------------
+
+          const temporaryError =
+            statusCode === 408 ||
+            statusCode === 429 ||
+            statusCode >= 500;
+
+
+          if (!temporaryError) {
+
+            break;
+
+          }
+
+
+          // Jangan menunggu terlalu lama.
+          if (
+            attempt <
+            MAX_RETRY_PER_MODEL
+          ) {
+
+            Utilities.sleep(
+              1000
+            );
+
+          }
+
+        } catch (error) {
+
+          lastError =
+            "Model "
+            + model
+            + ": "
+            + String(
+              error.message ||
+              error
+            );
+
+          if (
+            attempt <
+            MAX_RETRY_PER_MODEL
+          ) {
+
+            Utilities.sleep(
+              1000
+            );
+
+          }
+
+        }
+
+      }
+
+
+      if (apiResult) {
+
+        break;
+
+      }
+
+    }
+
+
+    // --------------------------------------------------------
+    // SEMUA MODEL GAGAL
+    // --------------------------------------------------------
+
+    if (!apiResult) {
+
+      throw new Error(
+        "Gemini sedang sibuk atau tidak tersedia. Silakan coba lagi. Detail: "
+        + lastError
+      );
+
+    }
+
+
+    // --------------------------------------------------------
+    // CEK RESPONSE
+    // --------------------------------------------------------
+
+    if (
+      !apiResult.candidates ||
+      !apiResult.candidates.length
+    ) {
+
+      throw new Error(
+        "Gemini tidak memberikan hasil penilaian."
+      );
+
+    }
+
+
+    const candidate =
+      apiResult.candidates[0];
+
+
+    if (
+      !candidate.content ||
+      !candidate.content.parts ||
+      !candidate.content.parts.length
+    ) {
+
+      throw new Error(
+        "Hasil dari Gemini kosong."
+      );
+
+    }
+
+
+    const resultText =
+      candidate.content.parts
+        .map(function(part) {
+
+          return part.text || "";
+
+        })
+        .join("");
+
+
+    if (!resultText) {
+
+      throw new Error(
+        "Gemini tidak mengembalikan teks."
+      );
+
+    }
+
+
+    // --------------------------------------------------------
+    // PARSE JSON
+    // --------------------------------------------------------
+
+    const grading =
+      parseGeminiJson(
+        resultText
+      );
+
+
+    // --------------------------------------------------------
+    // VALIDASI NAMA
+    // --------------------------------------------------------
+
+    if (
+      !grading.studentName ||
+      String(
+        grading.studentName
+      ).trim() === ""
+    ) {
+
+      grading.studentName =
+        "Nama tidak terbaca";
+
+    }
+
+
+    grading.studentName =
+      String(
+        grading.studentName
+      ).trim();
+
+
+    // --------------------------------------------------------
+    // VALIDASI JAWABAN
+    // --------------------------------------------------------
+
+    if (
+      !Array.isArray(
+        grading.answers
+      )
+    ) {
+
+      grading.answers = [];
+
+    }
+
+
+    let total = 0;
+
+    let perluPeriksa =
+      false;
+
+
+    // Pastikan selalu ada Q1-Q5
+    const fixedAnswers = [];
+
+
+    for (
+      let q = 1;
+      q <= 5;
+      q++
+    ) {
+
+      let answer =
+        grading.answers.find(
+          function(item) {
+
+            return Number(
+              item.question
+            ) === q;
+
+          }
+        );
+
+
+      if (!answer) {
+
+        answer = {
+
+          question: q,
+
+          answer:
+            "Jawaban tidak terbaca.",
+
+          score: 0,
+
+          confidence:
+            0,
+
+          note:
+            "Jawaban tidak ditemukan."
+
+        };
+
+      }
+
+
+      // Nilai
+      let score =
+        Number(
+          answer.score
+        );
+
+
+      if (
+        isNaN(score)
+      ) {
+
+        score = 0;
+
+      }
+
+
+      score =
+        Math.max(
+          0,
+          Math.min(
+            20,
+            Math.round(
+              score
+            )
+          )
+        );
+
+
+      answer.score =
+        score;
+
+
+      // Confidence
+      let confidence =
+        Number(
+          answer.confidence
+        );
+
+
+      if (
+        isNaN(confidence)
+      ) {
+
+        confidence = 0;
+
+      }
+
+
+      confidence =
+        Math.max(
+          0,
+          Math.min(
+            1,
+            confidence
+          )
+        );
+
+
+      answer.confidence =
+        confidence;
+
+
+      // Data teks
+      answer.answer =
+        String(
+          answer.answer ||
+          ""
+        );
+
+
+      answer.note =
+        String(
+          answer.note ||
+          ""
+        );
+
+
+      total +=
+        score;
+
+
+      if (
+        confidence < 0.75
+      ) {
+
+        perluPeriksa =
+          true;
+
+      }
+
+
+      fixedAnswers.push(
+        answer
+      );
+
+    }
+
+
+    // --------------------------------------------------------
+    // HASIL AKHIR
+    // --------------------------------------------------------
+
+    grading.answers =
+      fixedAnswers;
+
+    grading.total =
+      total;
+
+    grading.status =
+      perluPeriksa
+        ? "PERIKSA"
+        : "OK";
+
+
+    // --------------------------------------------------------
+    // KIRIM KE WEBSITE
+    // --------------------------------------------------------
+
+    return ContentService
+      .createTextOutput(
+        JSON.stringify({
+
+          success:
+            true,
+
+          result:
+            grading
+
+        })
+      )
+      .setMimeType(
+        ContentService.MimeType.JSON
+      );
+
+
+  } catch (error) {
+
+
+    // --------------------------------------------------------
+    // ERROR TERKENDALI
+    // --------------------------------------------------------
+
+    return ContentService
+      .createTextOutput(
+        JSON.stringify({
+
+          success:
+            false,
+
+          error:
+            String(
+              error.message ||
+              error
+            )
+
+        })
+      )
+      .setMimeType(
+        ContentService.MimeType.JSON
+      );
+
+  }
+
+}
+
+
+// ============================================================
+// PARSER JSON GEMINI
+// ============================================================
+
+function parseGeminiJson(text) {
+
+  let cleaned =
+    String(text)
+      .trim();
+
+
+  // Hapus markdown jika model tetap memberikannya
+  cleaned =
+    cleaned
+      .replace(
+        /^```json\s*/i,
+        ""
+      )
+      .replace(
+        /^```\s*/i,
+        ""
+      )
+      .replace(
+        /\s*```$/i,
+        ""
+      )
+      .trim();
+
+
+  // Percobaan pertama
+  try {
+
+    return JSON.parse(
+      cleaned
+    );
+
+  } catch (e) {
+
+    // Lanjut mencari object JSON
+  }
+
+
+  // Cari {...}
+  const start =
+    cleaned.indexOf("{");
+
+  const end =
+    cleaned.lastIndexOf("}");
+
+
+  if (
+    start >= 0 &&
+    end > start
+  ) {
+
+    const jsonText =
+      cleaned.substring(
+        start,
+        end + 1
+      );
+
+
+    try {
+
+      return JSON.parse(
+        jsonText
+      );
+
+    } catch (e) {
+
+      throw new Error(
+        "Format hasil Gemini tidak valid."
+      );
+
+    }
+
+  }
+
+
+  throw new Error(
+    "Gemini tidak menghasilkan JSON yang dapat dibaca."
+  );
+
+}
+
+
+// ============================================================
+// TES GEMINI TEKS
+// ============================================================
+
+function testGemini() {
+
+  const apiKey =
+    PropertiesService
+      .getScriptProperties()
+      .getProperty("GEMINI_API_KEY");
+
+
+  if (!apiKey) {
+
+    throw new Error(
+      "GEMINI_API_KEY belum ditemukan."
+    );
+
+  }
+
+
+  const model =
+    "gemini-3.8-flash";
+
+
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    + model
+    + ":generateContent";
+
+
+  const payload = {
+
+    contents: [
+
+      {
+
+        parts: [
+
+          {
+            text:
+              "Jawab singkat: berapa 2 + 2?"
+          }
+
+        ]
+
+      }
+
+    ]
+
+  };
+
+
+  const response =
+    UrlFetchApp.fetch(
+
+      url,
+
+      {
+
+        method:
+          "post",
+
+        contentType:
+          "application/json",
+
+        headers: {
+
+          "x-goog-api-key":
+            apiKey
+
+        },
+
+        payload:
+          JSON.stringify(payload),
+
+        muteHttpExceptions:
+          true
+
+      }
+
+    );
+
+
+  Logger.log(
+    "STATUS: "
+    + response.getResponseCode()
+  );
+
+
+  Logger.log(
+    response.getContentText()
+  );
+
+}
+
+
+// ============================================================
+// TES GEMINI GAMBAR
+// ============================================================
+
+function testGeminiImage() {
+
+  const apiKey =
+    PropertiesService
+      .getScriptProperties()
+      .getProperty("GEMINI_API_KEY");
+
+
+  if (!apiKey) {
+
+    throw new Error(
+      "GEMINI_API_KEY belum ditemukan."
+    );
+
+  }
+
+
+  const model =
+    "gemini-3.8-flash";
+
+
+  const imageBase64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
+
+  const payload = {
+
+    contents: [
+
+      {
+
+        parts: [
+
+          {
+
+            text:
+              "Apakah kamu menerima gambar ini? Jawab hanya: GAMBAR DITERIMA"
+
+          },
+
+          {
+
+            inlineData: {
+
+              mimeType:
+                "image/png",
+
+              data:
+                imageBase64
+
+            }
+
+          }
+
+        ]
+
+      }
+
+    ]
+
+  };
+
+
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    + model
+    + ":generateContent";
+
+
+  const response =
+    UrlFetchApp.fetch(
+
+      url,
+
+      {
+
+        method:
+          "post",
+
+        contentType:
+          "application/json",
+
+        headers: {
+
+          "x-goog-api-key":
+            apiKey
+
+        },
+
+        payload:
+          JSON.stringify(payload),
+
+        muteHttpExceptions:
+          true
+
+      }
+
+    );
+
+
+  Logger.log(
+    "STATUS: "
+    + response.getResponseCode()
+  );
+
+
+  Logger.log(
+    response.getContentText()
+  );
+
+}
