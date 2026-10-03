@@ -1,112 +1,53 @@
-import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1/+esm";
+import { pipeline } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0/+esm";
 
-const MODEL_ID = "wolfofbackstreet/GLM-OCR-ONNX-q4f16";
-const fileEl = document.querySelector("#file");
-const runBtn = document.querySelector("#run");
-const previewBox = document.querySelector("#previewBox");
-const preview = document.querySelector("#preview");
-const statusEl = document.querySelector("#status");
-const out = document.querySelector("#out");
-const bar = document.querySelector("#bar");
+const MODEL = "Xenova/trocr-small-handwritten";
+const fileEl=document.querySelector("#file"), run=document.querySelector("#run");
+const preview=document.querySelector("#preview"), bar=document.querySelector("#bar");
+const status=document.querySelector("#status"), out=document.querySelector("#out");
+let file=null, reader=null;
 
-let file = null;
+fileEl.onchange=()=>{
+  file=fileEl.files?.[0]||null;
+  if(!file)return;
+  preview.src=URL.createObjectURL(file);
+  preview.classList.remove("hidden");
+  run.disabled=false;
+  status.textContent="Foto siap. Tekan Mulai Membaca.";
+  out.textContent="Belum ada hasil.";
+};
 
-fileEl.addEventListener("change", () => {
-  file = fileEl.files?.[0] || null;
-  if (!file) return;
-  preview.src = URL.createObjectURL(file);
-  previewBox.classList.remove("hidden");
-  runBtn.disabled = false;
-  statusEl.textContent = "Foto siap. Tekan Mulai Membaca.";
-  out.textContent = "Belum ada hasil.";
-});
+function prog(n,t){bar.style.width=n+"%";status.textContent=t}
 
-function setProgress(p, msg) {
-  bar.style.width = `${Math.max(0, Math.min(100, p))}%`;
-  statusEl.textContent = msg;
+async function imageURL(f){
+  const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=URL.createObjectURL(f)});
+  const max=1800, s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+  const c=document.createElement("canvas"); c.width=Math.round(img.naturalWidth*s); c.height=Math.round(img.naturalHeight*s);
+  const x=c.getContext("2d"); x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+  return c.toDataURL("image/jpeg",.94);
 }
 
-async function loadImage(file) {
-  return await new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-async function makeDataURL(file) {
-  const img = await loadImage(file);
-  const maxSide = 1800;
-  const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-  const c = document.createElement("canvas");
-  c.width = Math.round(img.naturalWidth * scale);
-  c.height = Math.round(img.naturalHeight * scale);
-  const ctx = c.getContext("2d");
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0,0,c.width,c.height);
-  ctx.drawImage(img,0,0,c.width,c.height);
-  return c.toDataURL("image/jpeg", .92);
-}
-
-let ocr = null;
-
-runBtn.addEventListener("click", async () => {
-  if (!file) return;
-  runBtn.disabled = true;
-  out.textContent = "Memuat model OCR…";
-
-  try {
-    if (!navigator.gpu) {
-      throw new Error("WebGPU tidak tersedia di browser ini. Gunakan Safari/iPadOS yang mendukung WebGPU.");
-    }
-
-    setProgress(2, "Menyiapkan model OCR…");
-
-    if (!ocr) {
-      ocr = await pipeline("image-text-to-text", MODEL_ID, {
-        device: "webgpu",
-        dtype: "q4f16",
-        progress_callback: (x) => {
-          if (typeof x?.progress === "number") {
-            const p = Math.round(x.progress);
-            setProgress(Math.min(88, Math.max(2, p * .88)), `Mengunduh model OCR… ${p}%`);
-          }
+run.onclick=async()=>{
+  if(!file)return;
+  run.disabled=true; out.textContent="Menyiapkan OCR…";
+  try{
+    if(!reader){
+      reader=await pipeline("image-to-text",MODEL,{
+        device:navigator.gpu?"webgpu":"wasm",
+        dtype:"q8",
+        progress_callback:x=>{
+          if(typeof x?.progress==="number")prog(Math.round(x.progress*.85),`Mengunduh model OCR… ${Math.round(x.progress)}%`);
         }
       });
     }
-
-    setProgress(90, "Membaca tulisan pada foto…");
-    const image = await makeDataURL(file);
-
-    const messages = [{
-      role: "user",
-      content: [
-        { type: "image", url: image },
-        { type: "text", text:
-          "Text Recognition: Baca seluruh tulisan tangan pada lembar jawaban ini. Pertahankan nomor soal 1, 2, 3, 4, 5 dan tulis jawaban siswa apa adanya semampu mungkin. Jangan mengarang teks yang tidak terlihat. Gunakan bahasa Indonesia."
-        }
-      ]
-    }];
-
-    const result = await ocr(messages, {
-      max_new_tokens: 1200,
-      return_full_text: false
-    });
-
-    let text = result?.[0]?.generated_text;
-    if (Array.isArray(text)) {
-      text = text.map(x => x?.content || x?.text || "").join("\n");
-    }
-    if (typeof text !== "string") text = JSON.stringify(result, null, 2);
-
-    out.textContent = text.trim() || "Model tidak menghasilkan teks.";
-    setProgress(100, "Tes OCR selesai.");
-  } catch (err) {
-    console.error(err);
-    out.textContent = "GAGAL:\n" + (err?.message || String(err));
-    setProgress(0, "Tes gagal. Lihat pesan di bawah.");
-  } finally {
-    runBtn.disabled = false;
-  }
-});
+    prog(88,"Membaca foto…");
+    const img=await imageURL(file);
+    const result=await reader(img,{max_new_tokens:120});
+    const text=result?.[0]?.generated_text||"Tidak ada teks.";
+    out.textContent=text;
+    prog(100,"Tes OCR selesai.");
+  }catch(e){
+    console.error(e);
+    out.textContent="GAGAL:\n"+(e?.message||String(e));
+    prog(0,"Tes gagal.");
+  }finally{run.disabled=false}
+};
