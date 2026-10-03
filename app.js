@@ -174,50 +174,6 @@ async function sendToGemini(file) {
   return data.result;
 }
 
-  
-
-  setMsg("Mengirim foto ke AI Gemini...");
-
-  const base64 = await fileToBase64(file);
-
-  const response = await fetch(WEB_APP_URL, {
-
-    method: "POST",
-
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8"
-    },
-
-    body: JSON.stringify({
-      image: base64,
-      mimeType: file.type || "image/jpeg"
-    })
-
-  });
-
-  if (!response.ok) {
-
-    throw new Error(
-      `Server gagal (${response.status})`
-    );
-
-  }
-
-  const data = await response.json();
-
-  if (!data.success) {
-
-    throw new Error(
-      data.error ||
-      "AI gagal memproses lembar jawaban."
-    );
-
-  }
-
-  return data.result;
-}
-
-
 // ===============================
 // UBAH FOTO MENJADI BASE64
 // ===============================
