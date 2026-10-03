@@ -2,79 +2,124 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>NilaiLembar — Penilai Tulisan Tangan</title>
-<style>
-:root{--bg:#f4f7fb;--card:#fff;--ink:#18233a;--muted:#71809a;--line:#dfe6f0;--blue:#355bc7;--green:#07855e;--orange:#c46a00;--red:#c53d3d}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.top{background:linear-gradient(135deg,#17264c,#496bc5);color:white;padding:22px 20px 42px}.topin{max-width:1160px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;gap:14px;align-items:center}.mark{width:50px;height:50px;border-radius:15px;background:#fff;color:#3158c4;display:grid;place-items:center;font-weight:900;font-size:28px}.brand h1{margin:0;font-size:25px}.brand p{margin:4px 0 0;color:#dce5ff;font-size:14px}.badge{border:1px solid #ffffff55;background:#ffffff16;border-radius:999px;padding:9px 14px;font-weight:800;font-size:12px}.wrap{max-width:1160px;margin:-22px auto 40px;padding:0 16px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 35px #253a6312;padding:24px;margin-bottom:16px}.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.head h2{margin:0 0 5px;font-size:20px}.muted{color:var(--muted);font-size:14px}.drop{margin-top:18px;border:2px dashed #b8c9e9;border-radius:18px;min-height:180px;display:grid;place-items:center;text-align:center;background:linear-gradient(180deg,#fbfdff,#f7faff);cursor:pointer}.drop strong{display:block;font-size:18px}.plus{font-size:42px;color:#5270c9;line-height:1}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}.primary{background:#315bc7;color:#fff}.secondary{background:#edf2fb;color:#26385c}.green{background:#07855e;color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}.status{margin-top:14px;padding:12px 14px;border-radius:12px;background:#f5f8fc;color:#5d6d86;font-size:13px}.progress{height:8px;background:#e9eef7;border-radius:999px;overflow:hidden;margin-top:8px}.bar{height:100%;width:0;background:#4166cb;transition:width .2s}.settings{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{border:1px solid var(--line);border-radius:14px;padding:14px}.field label{display:block;font-weight:800;font-size:13px;margin-bottom:8px}.field input,.field textarea{width:100%;border:1px solid #ccd7e7;border-radius:10px;padding:10px;font:inherit}.rubrics{display:grid;gap:10px;margin-top:12px}.rub{border:1px solid var(--line);border-radius:14px;padding:12px}.rub b{display:block;margin-bottom:7px}.results{display:grid;gap:12px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{border:1px solid var(--line);border-radius:14px;padding:14px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:24px;margin-top:4px}.result{border:1px solid var(--line);border-radius:16px;overflow:hidden}.resulttop{padding:16px;display:flex;justify-content:space-between;gap:15px;background:#fbfcfe}.score{font-size:26px;font-weight:900}.warn{color:var(--orange);font-weight:800;font-size:12px}.ok{color:var(--green);font-weight:800;font-size:12px}.q{padding:14px 16px;border-top:1px solid var(--line);display:grid;grid-template-columns:45px 1fr 55px;gap:8px}.qnum{font-weight:900;color:#28478e}.qscore{text-align:right;font-weight:900}.ocr{color:#53627a;font-size:13px;line-height:1.5;white-space:pre-wrap}.tiny{font-size:12px;color:#8a96a9}.hidden{display:none!important}.footer{text-align:center;color:#8490a4;font-size:12px;padding:8px 0 30px}@media(max-width:760px){.settings,.summary{grid-template-columns:1fr}.topin{align-items:flex-start}.badge{display:none}.card{padding:18px}.q{grid-template-columns:38px 1fr 50px}}
-</style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NilaiLembar — Penilai Lembar Jawaban</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
-<header class="top"><div class="topin"><div class="brand"><div class="mark">✓</div><div><h1>NilaiLembar</h1><p>Penilaian tulisan tangan • lokal • tanpa API key</p></div></div><div class="badge">GRATIS</div></div></header>
-<main class="wrap">
-<section class="card">
- <div class="head"><div><h2>1. Unggah lembar jawaban</h2><div class="muted">Pilih sampai 10 foto sekaligus. Pemrosesan dilakukan di perangkat.</div></div><div class="badge" style="color:#294687;background:#eef3ff;border-color:#d7e1f8">maks. 500 lembar / sesi</div></div>
- <input id="files" type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden">
- <div id="drop" class="drop"><div><div class="plus">＋</div><strong>Pilih foto lembar jawaban</strong><div class="muted">JPG, JPEG, PNG, WEBP</div></div></div>
- <div id="filecount" class="muted" style="margin-top:10px">0 lembar dipilih</div>
- <div class="actions"><button id="start" class="btn primary" disabled>Mulai Penilaian</button><button id="clear" class="btn secondary" disabled>Hapus</button></div>
- <div id="status" class="status hidden"></div><div class="progress hidden" id="progress"><div class="bar" id="bar"></div></div>
-</section>
-<section class="card">
- <div class="head"><div><h2>2. Kunci penilaian</h2><div class="muted">Setiap soal maksimal 20 poin. Kata kunci membantu menentukan kesesuaian jawaban.</div></div><button id="reset" class="btn secondary">Kembalikan contoh</button></div>
- <div class="rubrics" id="rubrics"></div>
-</section>
-<section class="card"><div class="head"><div><h2>3. Hasil penilaian</h2><div class="muted">Hasil yang ditampilkan hanya penilaian akhir; teks OCR tidak ditampilkan.</div></div><button id="csv" class="btn green" disabled>Ekspor CSV</button></div><div id="results" class="results" style="margin-top:16px"><div class="muted">Belum ada hasil.</div></div></section>
-<div class="footer">Penilaian menggunakan pembacaan tulisan tangan lokal. Teks hasil OCR disembunyikan; yang ditampilkan hanya hasil penilaian. Tidak menggunakan Gemini/API key. Model tulisan tangan diunduh sekali dari Hugging Face dan kemudian disimpan di cache browser.</div>
-</main>
-<script type="module">
-import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2';
-import { createWorker } from 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/+esm';
+<div class="container">
 
-const DEFAULT=[
- ['Q1 — Pengertian Seni Rupa','seni rupa, karya, visual, keindahan, ekspresi, seni'],
- ['Q2 — Prinsip Seni Rupa','kesatuan, keseimbangan, penekanan, harmoni, proporsi, irama, kontras'],
- ['Q3 — Unsur Seni Rupa','titik, garis, bidang, bentuk, ruang, tekstur, warna, gelap terang'],
- ['Q4 — Jenis-Jenis Warna','primer, sekunder, tersier, netral, merah, kuning, biru, hijau, jingga, ungu, hitam, putih'],
- ['Q5 — Seni Rupa Murni dan Terapan','murni, terapan, fungsi, estetis, lukisan, patung, kriya, desain, kerajinan']
-];
-const $=id=>document.getElementById(id); let selected=[]; let results=[]; let trocr=null; let tess=null;
-function renderRubrics(){ $('rubrics').innerHTML=DEFAULT.map((r,i)=>`<div class="rub"><b>${r[0]}</b><input id="r${i}" value="${r[1].replaceAll('"','&quot;')}"></div>`).join('');}
-renderRubrics();
-$('reset').onclick=()=>{renderRubrics()};
-$('drop').onclick=()=>$('files').click(); $('files').onchange=()=>{selected=[...$('files').files].slice(0,500); updateFiles()};
-function updateFiles(){ $('filecount').textContent=`${selected.length} lembar dipilih`; $('start').disabled=!selected.length; $('clear').disabled=!selected.length; }
-$('clear').onclick=()=>{selected=[];$('files').value='';results=[];updateFiles();$('results').innerHTML='<div class="muted">Belum ada hasil.</div>'};
-function say(s){$('status').classList.remove('hidden');$('status').textContent=s}
-function progress(p){$('progress').classList.remove('hidden');$('bar').style.width=p+'%'}
-async function getTess(){ if(tess)return tess; say('Menyiapkan pembaca teks untuk mendeteksi baris jawaban…'); tess=await createWorker('eng'); return tess; }
-async function getTrocr(){ if(trocr)return trocr; say('Pertama kali memakai mode tulisan tangan. Mengunduh model lokal ±puluhan MB–ratusan MB, setelah itu browser akan menyimpannya di cache…'); trocr=await pipeline('image-to-text','Xenova/trocr-small-handwritten',{dtype:'q8'}); return trocr; }
-function loadImage(file){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(file)})}
-function cropCanvas(img,b,scale=2){const pad=12;const x=Math.max(0,b.x0-pad),y=Math.max(0,b.y0-pad),w=Math.min(img.naturalWidth-x,b.x1-b.x0+pad*2),h=Math.min(img.naturalHeight-y,b.y1-b.y0+pad*2);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*scale));c.height=Math.max(1,Math.round(h*scale));const ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,x,y,w,h,0,0,c.width,c.height);return c.toDataURL('image/png')}
-function normalize(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim()}
-function score(text,keys){const t=normalize(text);if(!t||t.length<5)return {score:0,found:0,confidence:'rendah'};const arr=keys.map(x=>normalize(x)).filter(Boolean);let found=0;for(const k of arr){const words=k.split(' ');if(words.length===1){if(t.includes(k))found++}else if(words.every(w=>t.includes(w)))found++;}const ratio=found/Math.max(1,arr.length);let s=Math.round(Math.min(20,ratio*20));if(t.length>80&&s<4)s=Math.min(4,s+1);return {score:s,found,confidence:found>=Math.max(1,Math.ceil(arr.length*.35))?'cukup':'rendah'}}
-function splitByFive(lines){
- // Group detected lines into five question buckets using printed Q markers when possible.
- const buckets=[[],[],[],[],[]]; let current=-1;
- for(const line of lines){const t=normalize(line.text);const m=t.match(/(?:^|\s)q\s*([1-5])\b|(?:^|\s)([1-5])\s*[.)-]/); if(m){current=Number(m[1]||m[2])-1; if(current>=0) buckets[current].push(line.text); continue;} if(current>=0) buckets[current].push(line.text);}
- if(buckets.some(b=>b.length)) return buckets;
- // Fallback: distribute in five contiguous groups.
- const n=Math.max(1,Math.ceil(lines.length/5)); for(let i=0;i<lines.length;i++)buckets[Math.min(4,Math.floor(i/n))].push(lines[i].text); return buckets;
-}
-async function process(file,index,total){
- const im=await loadImage(file); const w=im.naturalWidth,h=im.naturalHeight;
- const worker=await getTess(); const ocr=await worker.recognize(file,{rotateAuto:true}); const lines=(ocr.data.lines||[]).filter(l=>l.text&&l.text.trim()).map(l=>({text:l.text,bbox:l.bbox}));
- // Use Tesseract primarily for line locations, then TrOCR recognizes each likely handwritten line.
- const ai=await getTrocr(); const useful=lines.filter(l=>(l.bbox.x1-l.bbox.x0)>25 && (l.bbox.y1-l.bbox.y0)>8).slice(0,90);
- let recognized=[]; for(let j=0;j<useful.length;j++){const data=await ai(cropCanvas(im,useful[j].bbox,2),{max_new_tokens:64}); const txt=(Array.isArray(data)?data[0]?.generated_text:data?.generated_text)||''; recognized.push({text:txt,bbox:useful[j].bbox}); if(j%4===0)say(`Lembar ${index+1}/${total}: membaca tulisan tangan ${j+1}/${useful.length} baris…`);}
- const buckets=splitByFive(recognized); const rub=DEFAULT.map((r,i)=>({title:r[0],keys:$('r'+i).value.split(',').map(x=>x.trim()).filter(Boolean)}));
- const qs=buckets.map((b,i)=>{const text=b.join(' ').trim();const sc=score(text,rub[i].keys);return {...sc,text}});
- const nameLine=lines.find(l=>/^\s*nama\b/i.test(l.text)); let name='Nama tidak terbaca'; if(nameLine){const idx=lines.indexOf(nameLine); const next=lines[idx+1]?.text||''; name=(next||nameLine.text.replace(/^nama\s*[:.-]?/i,'')).trim()||name}
- const totalScore=qs.reduce((a,q)=>a+q.score,0); const needs=qs.some(q=>q.confidence==='rendah'||q.text.length<8); return {file:file.name,name,total:totalScore,needs,qs};
-}
-function render(){let done=results.filter(Boolean);let total=done.reduce((a,r)=>a+r.total,0);$('results').innerHTML=`<div class="summary"><div class="stat"><small>Lembar selesai</small><strong>${done.length}</strong></div><div class="stat"><small>Sudah dinilai</small><strong>${done.length}</strong></div><div class="stat"><small>Total skor</small><strong>${total}</strong></div><div class="stat"><small>Rata-rata</small><strong>${done.length?(total/done.length).toFixed(1):'0.0'}</strong></div></div>`+done.map(r=>`<article class="result"><div class="resulttop"><div><b>${escapeHtml(r.name)}</b><div class="tiny">${escapeHtml(r.file)}</div></div><div style="text-align:right"><div class="score">${r.total}/100</div><div class="${r.needs?'warn':'ok'}">SUDAH DINILAI</div></div></div>${r.qs.map((q,i)=>`<div class="q"><div class="qnum">Q${i+1}</div><div><b>Nilai soal ${i+1}</b></div><div class="qscore">${q.score}/20</div></div>`).join('')}</article>`).join('');$('csv').disabled=!done.length}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-$('start').onclick=async()=>{results=[];$('start').disabled=true;$('clear').disabled=true;progress(0);try{for(let i=0;i<selected.length;i++){results[i]=await process(selected[i],i,selected.length);progress(Math.round((i+1)/selected.length*100));render();}say('Selesai. Hasil yang ditampilkan adalah nilai Q1–Q5 dan total. Semua lembar yang selesai diproses ditampilkan sebagai SUDAH DINILAI.');}catch(e){console.error(e);say('Terjadi kendala: '+(e?.message||e));}finally{$('start').disabled=false;$('clear').disabled=false;}};
-$('csv').onclick=()=>{const rows=[['Nama','File','Total','Status','Q1','Q2','Q3','Q4','Q5'],...results.filter(Boolean).map(r=>[r.name,r.file,r.total,'SUDAH DINILAI',...r.qs.map(q=>q.score)])];const csv=rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='hasil-penilaian.csv';a.click()};
+<header class="hero">
+  <div>
+    <div class="eyebrow">NILAI LEMBAR • GRATIS</div>
+    <h1>Penilai Lembar Jawaban Seni Budaya</h1>
+    <p>Foto lembar jawaban → OCR → penilaian berdasarkan rubrik → hasil nilai.</p>
+  </div>
+  <div class="pill">Tanpa API Key</div>
+</header>
+
+<section class="card">
+  <h2>1. Pengaturan penilaian</h2>
+  <div class="grid">
+    <label>
+      Kelas
+      <select id="kelas">
+        <option value="X">X — Seni Rupa</option>
+        <option value="XI">XI — Seni Tari</option>
+        <option value="XII">XII — Seni Musik</option>
+      </select>
+    </label>
+    <label>
+      Nilai maksimal per soal
+      <input id="maxScore" type="number" min="1" value="20">
+    </label>
+  </div>
+  <p class="hint">5 soal × 20 poin = nilai maksimal 100.</p>
+</section>
+
+<section class="card">
+  <div class="row">
+    <h2>2. Unggah lembar jawaban</h2>
+    <span class="pill">Maks. 10 lembar</span>
+  </div>
+
+  <div class="drop">
+    <div class="drop-icon">＋</div>
+    <label class="drop-title" for="files">Pilih foto lembar jawaban</label>
+    <div class="hint">JPG, JPEG, PNG, WEBP • pilih sampai 10 foto sekaligus</div>
+    <input id="files" type="file"
+           accept="image/jpeg,image/png,image/webp"
+           multiple hidden>
+  </div>
+
+  <div id="selected"></div>
+
+  <div class="actions">
+    <button id="run" class="primary">Mulai Penilaian</button>
+    <button id="clear" class="secondary">Hapus</button>
+  </div>
+</section>
+
+<section class="card">
+  <div class="row">
+    <h2>3. Proses</h2>
+    <span id="status">Menunggu foto…</span>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+  <pre id="log"></pre>
+</section>
+
+<section class="card">
+  <div class="row">
+    <h2>4. Hasil penilaian</h2>
+    <button id="csv" class="secondary">Ekspor CSV</button>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>No</th><th>Siswa</th><th>Kelas</th><th>Nomor</th>
+          <th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th>
+          <th>Total</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2>5. Kunci penilaian</h2>
+  <div id="rubric"></div>
+</section>
+
+<section class="card warning">
+  <b>Catatan:</b>
+  Penilaian dilakukan langsung di perangkat dan tidak menggunakan Gemini/API key.
+  Foto diproses satu per satu agar perangkat tidak terlalu terbebani.
+</section>
+
+</div>
+
+<script src="app.js"></script>
+
+<script>
+/* Membatasi pilihan maksimal 10 foto */
+(function () {
+  const input = document.getElementById("files");
+  const selected = document.getElementById("selected");
+
+  input.addEventListener("change", function () {
+    if (this.files.length > 10) {
+      alert("Maksimal 10 lembar sekali upload.");
+      this.value = "";
+      selected.innerHTML = "";
+    }
+  });
+})();
 </script>
-</body></html>
+
+</body>
+</html>
