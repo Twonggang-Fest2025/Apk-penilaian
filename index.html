@@ -1,38 +1,172 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Nilai Lembar — V8 PaddleOCR</title>
-  <link rel="stylesheet" href="style.css?v=8.0.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Penilai Ujian Seni Budaya</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f5f7;color:#1f2937}
+.wrap{max-width:1000px;margin:auto;padding:20px}.card{background:#fff;border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 3px 14px #00000012}
+h1{margin:0 0 8px}.muted{color:#6b7280}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label{font-weight:700;display:block;margin-bottom:6px}input,select,button{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:15px}
+button{cursor:pointer;background:#111827;color:white;border:0;font-weight:700}.secondary{background:#e5e7eb;color:#111827}.danger{background:#b91c1c}.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.progress{height:10px;background:#e5e7eb;border-radius:20px;overflow:hidden}.bar{height:100%;width:0;background:#2563eb}
+table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border-bottom:1px solid #e5e7eb;padding:10px;text-align:left;vertical-align:top}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:700}.ok{background:#dcfce7;color:#166534}.cek{background:#fef3c7;color:#92400e}
+.preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:12px}.preview img{width:100%;height:120px;object-fit:cover;border-radius:10px}
+.small{font-size:13px}.score{font-size:28px;font-weight:800}.hidden{display:none}
+</style>
 </head>
 <body>
-  <main class="app">
-    <header>
-      <div class="badge">V8 • TES OCR</div>
-      <h1>Nilai Lembar</h1>
-      <p>Uji baca tulisan langsung di browser — tanpa API key.</p>
-    </header>
+<div class="wrap">
+<div class="card">
+<h1>Penilai Ujian Seni Budaya</h1>
+<div class="muted">Versi gratis — pemrosesan dilakukan di browser. Tidak memakai API berbayar.</div>
+</div>
 
-    <section class="card">
-      <h2>1. Pilih 1 foto lembar jawaban</h2>
-      <input id="file" type="file" accept="image/*">
-      <img id="preview" alt="Pratinjau lembar jawaban">
-      <button id="start" disabled>Mulai Tes OCR</button>
-      <div id="status" class="status">Belum ada foto.</div>
-    </section>
+<div class="card">
+<div class="grid">
+<div><label>Kelas</label><select id="kelas"><option value="X">X — Seni Rupa</option><option value="XI">XI — Seni Tari</option><option value="XII">XII — Seni Musik</option></select></div>
+<div><label>Nama / ID Siswa</label><input id="siswa" placeholder="Contoh: Andi / X-01"></div>
+<div><label>Foto lembar jawaban</label><input id="files" type="file" accept="image/*" multiple></div>
+</div>
+<p class="small muted">Untuk banyak lembar sekaligus, pilih beberapa foto dari galeri. Foto yang jelas, lurus, dan cukup terang akan lebih mudah dibaca OCR.</p>
+<div id="preview" class="preview"></div>
+<div class="actions" style="margin-top:14px">
+<button id="nilaiBtn">NILAI SEKARANG</button>
+<button id="exportBtn" class="secondary">EXPORT CSV</button>
+<button id="hapusBtn" class="danger">HAPUS REKAP</button>
+</div>
+<div style="margin-top:14px"><div class="progress"><div id="bar" class="bar"></div></div><p id="status" class="small muted">Siap.</p></div>
+</div>
 
-    <section class="card">
-      <h2>2. Hasil OCR</h2>
-      <div id="summary" class="summary">Belum diproses.</div>
-      <pre id="output">—</pre>
-    </section>
+<div class="card">
+<h2>Hasil Penilaian</h2>
+<div id="hasil" class="muted">Belum ada hasil.</div>
+</div>
 
-    <section class="card note">
-      <b>Catatan tes:</b>
-      versi ini hanya menguji kemampuan membaca foto. Belum ada penilaian nilai, agar kita tidak memasukkan nilai yang salah ketika tulisan belum terbaca dengan baik.
-    </section>
-  </main>
-  <script type="module" src="app.js?v=8.0.0"></script>
+<div class="card">
+<h2>Catatan</h2>
+<p class="small">Aplikasi ini memakai OCR dan pencocokan konsep/kata kunci di perangkat. Ini bukan AI penilai semantik penuh. Jawaban yang tulisannya sulit dibaca atau konsepnya ambigu dapat diberi status <b>PERLU CEK</b> agar diperiksa guru.</p>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+const RUBRIK={
+X:[
+["pengertian seni","ekspresi manusia","perasaan","pikiran","gagasan","kreativitas","karya"],
+["prinsip seni rupa","kesatuan","unity","keseimbangan","balance","proporsi","irama","ritme","harmoni","penekanan","komposisi"],
+["unsur seni rupa","titik","garis","bidang","bentuk","gelap terang","tekstur","warna"],
+["jenis warna","primer","merah","kuning","biru","sekunder","hijau","oranye","ungu","tersier","netral"],
+["seni rupa murni terapan","murni","ekspresi","keindahan","terapan","fungsi","kegunaan","praktis"]
+],
+XI:[
+["seni ekspresi","ekspresi","perasaan","pikiran","gagasan","pengalaman","karya"],
+["tenaga ruang waktu","tenaga","energi","ruang","arah","level","jangkauan","waktu","tempo","ritme","durasi"],
+["wiraga wirama wirasa","wiraga","gerak","wirama","irama","tempo","wirasa","perasaan","penghayatan","ekspresi"],
+["imitatif imajinatif","imitatif","meniru","tiruan","objek","hewan","imajinatif","imajinasi","khayalan"],
+["komposisi tari","tema","ide","eksplorasi","improvisasi","komposisi","penataan","pola lantai","evaluasi","penampilan"]
+],
+XII:[
+["jenis musik","klasik","tradisional","turun temurun","modern","zaman","teknologi","kontemporer","eksploratif"],
+["unsur musik","melodi","tinggi rendah","ritme","irama","tempo","dinamika","harmoni","timbre","warna suara","bentuk","struktur","tekstur"],
+["fungsi alat musik","melodi","melodis","melodi utama","harmoni","harmonis","akor","iringan","ritmis","ritme","ketukan"],
+["cara memainkan","pukul","dipukul","petik","dipetik","gesek","digesek","tiup","ditiup","tekan","ditekan","goyang","digoyang"],
+["sumber bunyi","idiophone","badan alat","membranophone","membran","selaput","chordophone","senar","dawai","aerophone","udara","electrophone","elektronik"]
+]};
+
+const $=id=>document.getElementById(id);
+let selected=[];
+$("files").addEventListener("change",e=>{
+ selected=[...e.target.files];
+ $("preview").innerHTML="";
+ selected.forEach(f=>{
+   const img=document.createElement("img"); img.src=URL.createObjectURL(f); $("preview").appendChild(img);
+ });
+ $("status").textContent=selected.length?selected.length+" foto dipilih.":"Belum ada foto.";
+});
+
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9\s-]/g," ").replace(/\s+/g," ").trim();}
+function splitAnswers(text){
+ let t=text.replace(/\r/g,"\n");
+ let parts=t.split(/(?:^|\n)\s*(?:jawaban\s*)?([1-5])\s*[\.\):\-]/i).filter(Boolean);
+ if(parts.length>=10){
+   let a=[]; for(let i=1;i<parts.length;i+=2)a.push(parts[i+1]||""); return a.slice(0,5);
+ }
+ let lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ let a=[[],[],[],[],[]];
+ let found=false;
+ lines.forEach(line=>{
+   let m=line.match(/^\s*([1-5])\s*[\.\):\-]\s*(.*)$/);
+   if(m){found=true;a[+m[1]-1].push(m[2]);}
+   else if(found){a[a.findIndex(x=>x.length===0)>=0?a.findIndex(x=>x.length===0):4].push(line);}
+ });
+ if(found)return a.map(x=>x.join(" "));
+ let n=Math.max(1,Math.ceil(t.length/5)); return [0,1,2,3,4].map(i=>t.slice(i*n,(i+1)*n));
+}
+function scoreAnswer(ans, keys){
+ const n=norm(ans); let hits=0;
+ keys.slice(1).forEach(k=>{if(n.includes(norm(k)))hits++;});
+ let score=Math.min(20,Math.round(hits*3.2));
+ if(n.replace(/\s/g,"").length>80 && hits>=3)score=Math.min(20,score+3);
+ if(hits>=6)score=20;
+ return {score,hits,short:n.replace(/\s/g,"").length<40};
+}
+function renderResult(rows){
+ if(!rows.length){$("hasil").textContent="Belum ada hasil.";return;}
+ let h="<table><thead><tr><th>Siswa</th><th>Kelas</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Total</th><th>Status</th></tr></thead><tbody>";
+ rows.slice().reverse().forEach(r=>{
+   h+=`<tr><td>${esc(r.siswa)}</td><td>${r.kelas}</td>${r.scores.map(x=>`<td>${x}</td>`).join("")}<td><b>${r.total}</b></td><td><span class="badge ${r.status==="OK"?"ok":"cek"}">${r.status}</span></td></tr>`;
+ });
+ h+="</tbody></table>"; $("hasil").innerHTML=h;
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function getRows(){try{return JSON.parse(localStorage.getItem("nilaiSeniBudayaGratis")||"[]")}catch{return[]}}
+function saveRows(r){localStorage.setItem("nilaiSeniBudayaGratis",JSON.stringify(r));renderResult(r);}
+renderResult(getRows());
+
+$("nilaiBtn").onclick=async()=>{
+ if(!selected.length){alert("Pilih foto lembar jawaban dulu.");return;}
+ let siswa=$("siswa").value.trim()||"Tanpa Nama", kelas=$("kelas").value;
+ $("nilaiBtn").disabled=true;
+ let all="", worker=null;
+ try{
+   $("status").textContent="Memuat OCR bahasa Indonesia...";
+   worker=await Tesseract.createWorker("ind");
+   for(let i=0;i<selected.length;i++){
+     $("status").textContent=`Membaca foto ${i+1} dari ${selected.length}...`;
+     const ret=await worker.recognize(selected[i]);
+     all+="\n"+ret.data.text+"\n";
+     $("bar").style.width=((i+1)/selected.length*70)+"%";
+   }
+   await worker.terminate(); worker=null;
+   $("status").textContent="Menghitung nilai...";
+   const ans=splitAnswers(all), scores=ans.map((a,i)=>scoreAnswer(a,RUBRIK[kelas][i]));
+   const vals=scores.map(x=>x.score), total=vals.reduce((a,b)=>a+b,0);
+   const perlu=scores.some(x=>x.short)||scores.filter(x=>x.hits<3).length>=2;
+   const row={siswa,kelas,scores:vals,total,status:perlu?"PERLU CEK":"OK",tanggal:new Date().toLocaleString("id-ID")};
+   const rows=getRows(); rows.push(row); saveRows(rows);
+   $("status").textContent=`Selesai. Total ${total}/100 — ${row.status}.`;
+   $("bar").style.width="100%";
+ }catch(e){
+   if(worker)try{await worker.terminate()}catch{}
+   console.error(e); $("status").textContent="Gagal memproses: "+e.message;
+   alert("Gagal membaca foto. Coba gunakan foto yang lebih jelas dan koneksi internet yang stabil untuk memuat OCR.");
+ }finally{$("nilaiBtn").disabled=false;}
+};
+
+$("hapusBtn").onclick=()=>{
+ if(confirm("Hapus seluruh rekap yang tersimpan di browser ini?")){localStorage.removeItem("nilaiSeniBudayaGratis");renderResult([]);$("status").textContent="Rekap dihapus.";}
+};
+$("exportBtn").onclick=()=>{
+ const rows=getRows(); if(!rows.length){alert("Belum ada data.");return;}
+ let csv="Nama/ID,Kelas,Q1,Q2,Q3,Q4,Q5,Total,Status,Tanggal\n";
+ rows.forEach(r=>csv+=[r.siswa,r.kelas,...r.scores,r.total,r.status,r.tanggal].map(x=>`"${String(x).replace(/"/g,'""')}"`).join(",")+"\n");
+ const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="rekap-nilai-seni-budaya.csv";a.click();URL.revokeObjectURL(a.href);
+};
+</script>
 </body>
 </html>
+
