@@ -29,9 +29,15 @@ function setProg(p,t){$("progressBar").style.width=p+"%";$("progressPercent").te
 function setStatus(t){$("systemStatus").textContent=t}
 
 $("fileInput").addEventListener("change",e=>{
- state.file=(e.target.files||[])[0]||null;
- $("fileNames").textContent=state.file?state.file.name:"Belum ada file dipilih";
- msg(state.file?"1 foto siap diuji.":"Belum ada lembar diproses.");
+ const files=Array.from(e.target.files||[]);
+ state.file=files[0]||null;
+ if(state.file){
+   $("fileNames").textContent=state.file.name || "1 foto dipilih";
+   msg("1 foto sudah masuk. Sekarang tekan Mulai Penilaian.");
+ }else{
+   $("fileNames").textContent="Belum ada file dipilih";
+   msg("Belum ada lembar diproses.");
+ }
 });
 
 async function getOCR(){
