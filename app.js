@@ -1,19 +1,20 @@
-// ===============================
+// ======================================================
 // AI PENILAI LEMBAR JAWABAN
-// ===============================
+// ======================================================
 
 const WEB_APP_URL =
   "https://script.google.com/macros/s/AKfycbwsyNf7WJjnyZdKc9kNIuN0Vf8D26tG6ORWYXA3R4_VfjcSUqLS8p7_8Uc_aIL3SsSMJA/exec";
 
 const photo = document.getElementById("photo");
 const camera = document.getElementById("camera");
-const answers = document.getElementById("answers");
 const processButton = document.getElementById("process");
+const answers = document.getElementById("answers");
+const csvButton = document.getElementById("csv");
 
 
-// ===============================
+// ======================================================
 // PESAN STATUS
-// ===============================
+// ======================================================
 
 function setMsg(text) {
   const el = document.getElementById("msg");
@@ -24,36 +25,41 @@ function setMsg(text) {
 }
 
 
-// ===============================
-// HITUNG TOTAL
-// ===============================
+// ======================================================
+// HITUNG TOTAL NILAI
+// ======================================================
 
 function updateTotal() {
   let total = 0;
 
   for (let i = 0; i < 5; i++) {
-    total += Number(
-      document.getElementById(`s${i}`)?.value || 0
-    );
+    const input = document.getElementById(`s${i}`);
+
+    if (input) {
+      total += Number(input.value || 0);
+    }
   }
 
-  const el = document.getElementById("total");
+  const totalElement = document.getElementById("total");
 
-  if (el) {
-    el.textContent = `Total: ${total}`;
+  if (totalElement) {
+    totalElement.textContent = `Total: ${total}`;
   }
 }
 
 
-// ===============================
+// ======================================================
 // PREVIEW FOTO
-// ===============================
+// ======================================================
 
 function showPreview(file) {
-  const old = document.getElementById("preview-ai");
+  if (!answers) return;
 
-  if (old) {
-    old.remove();
+  const oldPreview =
+    document.getElementById("preview-ai");
+
+  if (oldPreview) {
+    oldPreview.remove();
   }
 
   const img = document.createElement("img");
@@ -67,137 +73,54 @@ function showPreview(file) {
   img.style.margin = "15px auto";
   img.style.borderRadius = "10px";
 
-  if (answers) {
-    answers.prepend(img);
-  }
+  answers.prepend(img);
 }
 
 
-// ===============================
-// TAMPILKAN HASIL AI
-// ===============================
-
-function renderResults(result) {
-
-  if (!answers) {
-    return;
-  }
-
-  answers.innerHTML = "";
-
-  const list = result.answers || [];
-
-  list.forEach((item, index) => {
-
-    const box = document.createElement("div");
-
-    box.className = "answer";
-
-    const score = Number(item.score || 0);
-
-    const max = Number(
-      item.max_score || 20
-    );
-
-    const confidenceNumber =
-      Number(item.confidence || 0);
-
-    const confidence =
-      Math.round(confidenceNumber * 100);
-
-    const answerText =
-      item.answer ||
-      item.extracted_answer ||
-      "";
-
-    const noteText =
-      item.note ||
-      item.reason ||
-      "";
-
-    box.innerHTML = `
-      <h3>
-        ${item.question || `Q${index + 1}`}
-      </h3>
-
-      <div class="meta">
-        Confidence AI: ${confidence}%
-      </div>
-
-      <textarea
-        id="t${index}"
-        placeholder="Jawaban terbaca AI"
-      >${answerText}</textarea>
-
-      <div class="scoreline">
-
-        <label>
-          Nilai
-
-          <input
-            id="s${index}"
-            type="number"
-            min="0"
-            max="${max}"
-            value="${score}"
-          >
-        </label>
-
-        <span
-          id="st${index}"
-          class="${confidenceNumber < 0.75 ? "check" : ""}"
-        >
-          ${confidenceNumber < 0.75 ? "PERIKSA" : "OK"}
-        </span>
-
-      </div>
-
-      <div class="meta">
-        ${noteText}
-      </div>
-    `;
-
-    answers.appendChild(box);
-  });
-
-  updateTotal();
-}
-
-
-// ===============================
-// UBAH FOTO MENJADI BASE64
-// ===============================
+// ======================================================
+// FILE → BASE64
+// ======================================================
 
 function fileToBase64(file) {
-
   return new Promise((resolve, reject) => {
 
     const reader = new FileReader();
 
     reader.onload = () => {
 
-      const result = reader.result;
+      const result = String(reader.result);
 
       const base64 =
-        String(result).split(",")[1];
+        result.split(",")[1];
+
+      if (!base64) {
+        reject(
+          new Error("Foto gagal dibaca.")
+        );
+
+        return;
+      }
 
       resolve(base64);
     };
 
     reader.onerror = () => {
+
       reject(
         new Error("Foto gagal dibaca.")
       );
+
     };
 
     reader.readAsDataURL(file);
+
   });
 }
 
 
-// ===============================
+// ======================================================
 // KOMPRES FOTO
-// ===============================
+// ======================================================
 
 async function compressImage(file) {
 
@@ -224,19 +147,22 @@ async function compressImage(file) {
 
         if (width > height) {
 
-          height = Math.round(
-            height * MAX_SIZE / width
-          );
+          height =
+            Math.round(
+              height * MAX_SIZE / width
+            );
 
           width = MAX_SIZE;
 
         } else {
 
-          width = Math.round(
-            width * MAX_SIZE / height
-          );
+          width =
+            Math.round(
+              width * MAX_SIZE / height
+            );
 
           height = MAX_SIZE;
+
         }
       }
 
@@ -249,6 +175,18 @@ async function compressImage(file) {
       const ctx =
         canvas.getContext("2d");
 
+      if (!ctx) {
+
+        reject(
+          new Error(
+            "Browser tidak mendukung pemrosesan foto."
+          )
+        );
+
+        return;
+      }
+
+      // Latar putih
       ctx.fillStyle = "#ffffff";
 
       ctx.fillRect(
@@ -258,6 +196,7 @@ async function compressImage(file) {
         height
       );
 
+      // Gambar
       ctx.drawImage(
         img,
         0,
@@ -291,10 +230,12 @@ async function compressImage(file) {
             );
 
           resolve(compressedFile);
+
         },
         "image/jpeg",
         0.88
       );
+
     };
 
     img.onerror = () => {
@@ -306,16 +247,51 @@ async function compressImage(file) {
           "Foto tidak dapat diproses."
         )
       );
+
     };
 
     img.src = url;
+
   });
+
 }
 
 
-// ===============================
-// KIRIM FOTO KE GEMINI
-// ===============================
+// ======================================================
+// AMBIL FOTO YANG DIPILIH
+// ======================================================
+
+function getSelectedFile() {
+
+  // Kamera
+  if (
+    camera &&
+    camera.files &&
+    camera.files.length > 0
+  ) {
+
+    return camera.files[0];
+
+  }
+
+  // Galeri
+  if (
+    photo &&
+    photo.files &&
+    photo.files.length > 0
+  ) {
+
+    return photo.files[0];
+
+  }
+
+  return null;
+}
+
+
+// ======================================================
+// KIRIM FOTO KE GOOGLE APPS SCRIPT → GEMINI
+// ======================================================
 
 async function sendToGemini(file) {
 
@@ -327,6 +303,7 @@ async function sendToGemini(file) {
     throw new Error(
       "URL Web App Apps Script belum dimasukkan."
     );
+
   }
 
   setMsg(
@@ -336,14 +313,16 @@ async function sendToGemini(file) {
   const compressedFile =
     await compressImage(file);
 
+
   setMsg(
-    "Mengirim foto ke AI Gemini..."
+    "Membaca lembar jawaban dengan AI..."
   );
 
   const base64 =
     await fileToBase64(
       compressedFile
     );
+
 
   const response =
     await fetch(
@@ -363,15 +342,19 @@ async function sendToGemini(file) {
       }
     );
 
+
   if (!response.ok) {
 
     throw new Error(
-      `Server gagal (${response.status})`
+      `Server gagal (${response.status}).`
     );
+
   }
+
 
   const data =
     await response.json();
+
 
   if (!data.success) {
 
@@ -379,43 +362,194 @@ async function sendToGemini(file) {
       data.error ||
       "AI gagal memproses lembar jawaban."
     );
+
   }
+
+
+  if (!data.result) {
+
+    throw new Error(
+      "AI tidak mengembalikan hasil penilaian."
+    );
+
+  }
+
 
   return data.result;
+
 }
 
 
-// ===============================
-// AMBIL FILE
-// ===============================
+// ======================================================
+// TAMPILKAN HASIL PENILAIAN
+// ======================================================
 
-function getSelectedFile() {
+function renderResults(result) {
 
-  if (
-    camera &&
-    camera.files &&
-    camera.files.length
-  ) {
+  if (!answers) return;
 
-    return camera.files[0];
+  answers.innerHTML = "";
+
+
+  const list =
+    Array.isArray(result.answers)
+      ? result.answers
+      : [];
+
+
+  if (list.length === 0) {
+
+    answers.innerHTML = `
+      <div class="answer">
+        <h3>Tidak ada hasil</h3>
+
+        <div class="meta">
+          AI tidak menemukan jawaban yang dapat dinilai.
+        </div>
+      </div>
+    `;
+
+    updateTotal();
+
+    return;
   }
 
-  if (
-    photo &&
-    photo.files &&
-    photo.files.length
-  ) {
 
-    return photo.files[0];
-  }
+  list.forEach(
+    (item, index) => {
 
-  return null;
+      const box =
+        document.createElement("div");
+
+      box.className = "answer";
+
+
+      let score =
+        Number(item.score || 0);
+
+      if (score < 0) {
+        score = 0;
+      }
+
+      if (score > 20) {
+        score = 20;
+      }
+
+
+      const confidence =
+        Number(item.confidence || 0);
+
+
+      const confidencePercent =
+        Math.round(
+          confidence * 100
+        );
+
+
+      // Backend sekarang menggunakan "answer"
+      // sedangkan versi lama menggunakan "extracted_answer"
+      const answerText =
+        item.answer ||
+        item.extracted_answer ||
+        "";
+
+
+      // Backend sekarang menggunakan "note"
+      // sedangkan versi lama menggunakan "reason"
+      const note =
+        item.note ||
+        item.reason ||
+        "";
+
+
+      const status =
+        confidence < 0.75
+          ? "PERIKSA"
+          : "OK";
+
+
+      const statusClass =
+        confidence < 0.75
+          ? "check"
+          : "";
+
+
+      box.innerHTML = `
+
+        <h3>
+          Soal ${item.question || index + 1}
+        </h3>
+
+        <div class="meta">
+          Confidence AI:
+          ${confidencePercent}%
+        </div>
+
+        <textarea
+          id="t${index}"
+          placeholder="Jawaban yang terbaca AI"
+        >${escapeHtml(answerText)}</textarea>
+
+        <div class="scoreline">
+
+          <label>
+            Nilai
+
+            <input
+              id="s${index}"
+              type="number"
+              min="0"
+              max="20"
+              value="${score}"
+            >
+          </label>
+
+          <span
+            id="st${index}"
+            class="${statusClass}"
+          >
+            ${status}
+          </span>
+
+        </div>
+
+        <div class="meta">
+          ${escapeHtml(note)}
+        </div>
+
+      `;
+
+
+      answers.appendChild(box);
+
+    }
+  );
+
+
+  updateTotal();
+
 }
 
 
-// ===============================
-// TOMBOL PERIKSA DENGAN AI
-// ===============================
+// ======================================================
+// AMANKAN TEKS DARI AI
+// ======================================================
+
+function escapeHtml(text) {
+
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+// ======================================================
+// TOMBOL "PERIKSA DENGAN AI"
+// ======================================================
 
 if (processButton) {
 
@@ -426,15 +560,19 @@ if (processButton) {
       const file =
         getSelectedFile();
 
+
+      // Belum ada foto
       if (!file) {
 
         alert(
-          "Ambil foto dengan kamera atau pilih foto dari galeri terlebih dahulu."
+          "Silakan ambil foto dengan kamera atau pilih foto dari galeri terlebih dahulu."
         );
 
         return;
       }
 
+
+      // Pastikan gambar
       if (
         !file.type ||
         !file.type.startsWith("image/")
@@ -447,76 +585,115 @@ if (processButton) {
         return;
       }
 
+
       try {
 
+        // Matikan tombol selama proses
         processButton.disabled = true;
 
         processButton.textContent =
-          "⏳ MEMERIKSA...";
+          "⏳ SEDANG MEMERIKSA...";
+
 
         setMsg(
           "Membaca foto lembar jawaban..."
         );
 
+
+        // Tampilkan preview
         showPreview(file);
 
+
+        // Kirim ke AI
         const result =
           await sendToGemini(file);
 
+
+        // Tampilkan hasil
         renderResults(result);
+
 
         const total =
           Number(result.total || 0);
 
-        setMsg(
-          `Selesai. Total nilai: ${total}`
-        );
+
+        if (result.status === "PERIKSA") {
+
+          setMsg(
+            `Selesai. Total nilai: ${total}. Ada jawaban yang perlu diperiksa.`
+          );
+
+        } else {
+
+          setMsg(
+            `Selesai. Total nilai: ${total}`
+          );
+
+        }
+
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          "ERROR:",
+          error
+        );
+
 
         setMsg(
-          "Terjadi kesalahan."
+          "Terjadi kesalahan saat memeriksa."
         );
+
 
         if (answers) {
 
           answers.innerHTML = `
+
             <div class="answer">
 
               <h3>
-                Gagal memproses
+                ❌ Gagal memproses
               </h3>
 
               <div class="meta">
-                ${error.message}
+                ${escapeHtml(
+                  error.message ||
+                  "Kesalahan tidak diketahui."
+                )}
               </div>
 
             </div>
+
           `;
+
         }
 
+
         alert(
-          error.message
+          error.message ||
+          "Terjadi kesalahan."
         );
+
 
       } finally {
 
-        processButton.disabled =
-          false;
+        // Aktifkan tombol lagi
+        processButton.disabled = false;
 
         processButton.textContent =
           "🤖 PERIKSA DENGAN AI";
+
       }
+
     }
   );
+
 }
 
 
-// ===============================
-// UPDATE NILAI MANUAL
-// ===============================
+// ======================================================
+// HITUNG ULANG NILAI JIKA DIUBAH MANUAL
+// ======================================================
 
 document.addEventListener(
   "input",
@@ -528,18 +705,88 @@ document.addEventListener(
       )
     ) {
 
+      let value =
+        Number(event.target.value || 0);
+
+
+      if (value < 0) {
+        value = 0;
+      }
+
+      if (value > 20) {
+        value = 20;
+      }
+
+
+      event.target.value =
+        value;
+
+
       updateTotal();
+
     }
+
   }
 );
 
 
-// ===============================
-// EXPORT CSV
-// ===============================
+// ======================================================
+// PILIH FOTO DARI GALERI
+// ======================================================
 
-const csvButton =
-  document.getElementById("csv");
+if (photo) {
+
+  photo.addEventListener(
+    "change",
+    () => {
+
+      if (
+        photo.files &&
+        photo.files.length
+      ) {
+
+        setMsg(
+          "Foto dipilih. Tekan PERIKSA DENGAN AI."
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+// ======================================================
+// AMBIL FOTO DARI KAMERA
+// ======================================================
+
+if (camera) {
+
+  camera.addEventListener(
+    "change",
+    () => {
+
+      if (
+        camera.files &&
+        camera.files.length
+      ) {
+
+        setMsg(
+          "Foto kamera diterima. Tekan PERIKSA DENGAN AI."
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+// ======================================================
+// EXPORT CSV
+// ======================================================
 
 if (csvButton) {
 
@@ -552,22 +799,27 @@ if (csvButton) {
           "name"
         )?.value || "";
 
+
       const className =
         document.getElementById(
           "class2"
         )?.value || "";
+
 
       const number =
         document.getElementById(
           "number"
         )?.value || "";
 
+
       const classCode =
         document.getElementById(
           "kelas"
         )?.value || "";
 
+
       const scores = [];
+
 
       for (let i = 0; i < 5; i++) {
 
@@ -576,7 +828,9 @@ if (csvButton) {
             `s${i}`
           )?.value || ""
         );
+
       }
+
 
       const total =
         scores.reduce(
@@ -585,6 +839,7 @@ if (csvButton) {
           0
         );
 
+
       const row = [
         name,
         className,
@@ -592,6 +847,7 @@ if (csvButton) {
         ...scores,
         total
       ];
+
 
       const csv =
         "Nama,Kelas,Nomor,Q1,Q2,Q3,Q4,Q5,Total\n" +
@@ -603,6 +859,7 @@ if (csvButton) {
           )
           .join(",");
 
+
       const blob =
         new Blob(
           [csv],
@@ -612,29 +869,41 @@ if (csvButton) {
           }
         );
 
+
       const url =
         URL.createObjectURL(blob);
 
-      const a =
+
+      const link =
         document.createElement("a");
 
-      a.href = url;
 
-      a.download =
+      link.href = url;
+
+
+      link.download =
         `hasil-${classCode || "penilaian"}.csv`;
 
-      a.click();
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
 
       URL.revokeObjectURL(url);
+
     }
   );
+
 }
 
 
-// ===============================
+// ======================================================
 // SELESAI
-// ===============================
+// ======================================================
 
-console.log(
-  "AI Penilai aktif."
+setMsg(
+  "Siap. Silakan masukkan foto lembar jawaban."
 );
